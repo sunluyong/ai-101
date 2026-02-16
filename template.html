@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Course Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3ECF8E', // Supabase Green
+                        bg: '#121212',      // Supabase Dark BG
+                        surface: '#1C1C1C', // Darker Surface
+                        text: '#EDEDED',    // Off-white text
+                        muted: '#A1A1A1',   // Muted text
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Custom scrollbar hide */
+        ::-webkit-scrollbar { display: none; }
+        
+        body {
+            background-color: #121212;
+            color: #EDEDED;
+            overflow: hidden;
+            font-size: 2.4em;
+        }
+
+        /* Slide Transition Logic */
+        .slide-content {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+        }
+        
+        .slide-content.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* Strong Highlight */
+        strong {
+            color: #3ECF8E;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black">
+
+    <!-- Slides Container -->
+    <main id="slides-container" class="w-full h-full relative">
+        <!-- SLIDES_CONTENT_HERE -->
+    </main>
+
+    <!-- Progress Bar -->
+    <div class="fixed bottom-0 left-0 w-full h-2 bg-gray-800 z-50">
+        <div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <!-- Page Number -->
+    <div id="page-number" class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80">
+        1 / 1
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide-content');
+            const progressBar = document.getElementById('progress-bar');
+            const pageNumber = document.getElementById('page-number');
+            let currentIndex = 0;
+
+            function updateSlide(index) {
+                if (index < 0) index = 0;
+                if (index >= slides.length) index = slides.length - 1;
+
+                currentIndex = index;
+
+                // Update visibility
+                slides.forEach((slide, i) => {
+                    if (i === currentIndex) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                // Update progress bar
+                const progress = ((currentIndex + 1) / slides.length) * 100;
+                progressBar.style.width = `${progress}%`;
+
+                // Update page number
+                pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+                
+                // Update URL hash
+                window.location.hash = `#${currentIndex + 1}`;
+            }
+
+            // Keyboard Navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+                    updateSlide(currentIndex + 1);
+                } else if (e.key === 'ArrowLeft') {
+                    updateSlide(currentIndex - 1);
+                }
+            });
+
+            // Initialize from URL hash
+            const hash = window.location.hash;
+            let initialIndex = 0;
+            if (hash) {
+                const page = parseInt(hash.substring(1), 10);
+                if (!isNaN(page)) {
+                    initialIndex = page - 1;
+                }
+            }
+            updateSlide(initialIndex);
+            
+            // Handle hash change (e.g. browser back button)
+            window.addEventListener('hashchange', () => {
+                const hash = window.location.hash;
+                if (hash) {
+                    const page = parseInt(hash.substring(1), 10);
+                    if (!isNaN(page)) {
+                        updateSlide(page - 1);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

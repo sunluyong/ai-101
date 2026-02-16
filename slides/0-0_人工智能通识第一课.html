@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0-0_人工智能通识第一课 - Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3ECF8E', // Supabase Green
+                        bg: '#121212',      // Supabase Dark BG
+                        surface: '#1C1C1C', // Darker Surface
+                        text: '#EDEDED',    // Off-white text
+                        muted: '#A1A1A1',   // Muted text
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Custom scrollbar hide */
+        ::-webkit-scrollbar { display: none; }
+        
+        body {
+            background-color: #121212;
+            color: #EDEDED;
+            overflow: hidden;
+            font-size: 2.4em;
+        }
+
+        /* Slide Transition Logic - Kept in CSS for simplicity of state management */
+        .slide-content {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+        }
+        
+        .slide-content.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* Strong Highlight */
+        strong {
+            color: #3ECF8E;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black">
+
+    <!-- Slides Container -->
+    <main id="slides-container" class="w-full h-full relative">
+        
+        <!-- Slide 0: Title Slide -->
+        <div class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]" data-index="0">
+            <!-- Series Tag -->
+            <div class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted">
+                <span class="text-primary font-bold">人工智能通识</span>
+                <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+                <span class="text-gray-300">导论</span>
+            </div>
+
+            <!-- Icon: Brain/Chip -->
+            <div class="mb-12 relative">
+                <div class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"></div>
+                <svg class="w-48 h-48 text-primary relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                    <path d="M20.5 10a9 9 0 1 1-1.6-3.8"/>
+                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z" opacity="0.2"/>
+                    <path d="M9.5 12a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0z"/>
+                    <path d="M3 12h2"/>
+                    <path d="M19 12h2"/>
+                    <path d="M12 3v2"/>
+                    <path d="M12 19v2"/>
+                </svg>
+            </div>
+
+            <h1 class="text-[7rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]">智能从何而来</h1>
+            <p class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]">智能 = 学习能力 + 迁移能力</p>
+        </div>
+
+        <!-- Slide 1: 古老的梦想 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="1">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">古老的梦想：会思考的机器</h2>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">制造一个“会思考的东西”是人类最古老的梦想之一。</p>
+            
+            <div class="grid grid-cols-1 gap-6 w-full">
+                <!-- History -->
+                <div class="bg-surface p-6 rounded-lg border border-gray-800 w-full">
+                    <h3 class="text-[2.5rem] font-semibold text-text mb-6 mt-0">🚀 飞速发展</h3>
+                    <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-0 max-w-full list-inside text-left space-y-2">
+                        <li><strong>1956年</strong>：“人工智能”（Artificial Intelligence）概念正式提出。</li>
+                        <li><strong>1997年</strong>：IBM 深蓝依靠强大算力击败国际象棋冠军。</li>
+                        <li><strong>2016年</strong>：DeepMind AlphaGO 通过策略网络+强化学习击败人类围棋冠军。</li>
+                        <li><strong>如今</strong>：广泛落地于人脸识别、智能驾驶等领域。</li>
+                    </ul>
+                </div>
+
+                <!-- Reality -->
+                <div class="bg-surface p-6 rounded-lg border-l-4 border-primary w-full">
+                    <h3 class="text-[2.5rem] font-semibold text-text mb-6 mt-0">⚠️ 局限性：专用人工智能（ANI）</h3>
+                    <p class="text-[2.2rem] leading-[1.4] text-muted mb-0">它们在<strong>特定任务</strong>上表现卓越，但很难<strong>跨任务、跨场景</strong>迁移能力。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: 什么是智能 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="2">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">什么是智能？</h2>
+            
+            <div class="grid grid-cols-2 gap-16 w-full items-center h-full pb-20">
+                <!-- Left: Phenomenon -->
+                <div class="flex flex-col justify-center h-full">
+                    <h3 class="text-[2.5rem] font-semibold text-text mb-6 mt-0">现象：举一反三</h3>
+                    <div class="bg-surface p-8 rounded-lg border-l-4 border-primary w-full mb-6">
+                        <h4 class="text-[2.2rem] font-bold text-primary mb-4 mt-0">👶 孩子与开水</h4>
+                        <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-0">被烫过一次后，不仅避开<strong>那个杯子</strong>，还会警惕<strong>所有冒热气的物体</strong>。</p>
+                    </div>
+                    <p class="text-[2.2rem] leading-[1.5] text-muted mb-0">不需要把“所有会烫的东西”都试一遍，就能学会避险。</p>
+                </div>
+
+                <!-- Right: Definition -->
+                <div class="flex flex-col justify-center h-full">
+                    <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-6">这种“从有限经验中抽取规律，并在陌生环境中做出正确判断”的能力，被称为<strong>泛化 (Generalization)</strong>。</p>
+                    
+                    <div class="my-6 w-full text-center bg-surface p-6 rounded-lg border border-gray-800">
+                        <p class="text-[2.5rem] font-mono text-center whitespace-nowrap inline-block m-0">
+                            智能 = <span class="text-primary">学习能力</span> + <span class="text-primary">迁移能力</span>
+                        </p>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-2">这就是<strong>通用人工智能 (AGI)</strong>：</p>
+                        <p class="text-[2rem] leading-[1.4] text-muted mb-0">一种具备类人理解、推理与学习能力，并能在<strong>不同领域</strong>中解决问题的系统。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: 认出苹果 - 思考 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="3">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">思考：我们是如何认出“苹果”的？</h2>
+            <!-- Inserted Images -->
+            <div class="flex gap-6 mb-8 justify-center items-center w-full">
+                <!-- Image 1 -->
+                <div class="bg-surface p-2 rounded-lg border border-gray-700 shadow-lg overflow-hidden">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8Tc2DXdOkJHCtd_cTrTH2bvUEwJRauRmWjA&s" class="h-48 w-48 object-cover object-center rounded" alt="Apple 1">
+                </div>
+                <!-- Image 2 -->
+                 <div class="bg-surface p-2 rounded-lg border border-gray-700 shadow-lg overflow-hidden">
+                    <img src="https://img.ixintu.com/download/jpg/202010/a0e421791e2d4bf297083dd571bfcef3_610_614.jpg!con" class="h-48 w-48 object-cover object-center rounded" alt="Apple 2">
+                </div>
+                <!-- Image 3 -->
+                 <div class="bg-surface p-2 rounded-lg border border-gray-700 shadow-lg overflow-hidden">
+                    <img src="https://media.istockphoto.com/id/1328405538/zh/%E5%90%91%E9%87%8F/red-apple-fruit-logo.jpg?s=612x612&w=0&k=20&c=NAKFbovw32D_SVW9dfjBdlka86mAadrtFb9J4CNi2nY=" class="h-48 w-48 object-cover object-center rounded" alt="Apple 3">
+                </div>
+            </div>
+
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">请问，你背诵过苹果的“精确定义”吗？</p>
+            <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left pl-10 space-y-6">
+                <li>它的几何参数是多少？</li>
+                <li>它的颜色 RGB 阈值是多少？</li>
+                <li>它的纹理方程是什么？</li>
+            </ul>
+
+            <p class="text-[2.4rem] leading-[1.5] text-muted mb-8 max-w-full text-left mt-6">显然没有。但为什么我们能认出各种各样的苹果？</p>
+        </div>
+
+        <!-- Slide 4: 认出苹果 - 机制 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="4">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">见多识广，举一反三</h2>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">在反复见过无数次苹果后，大脑自动从海量样本中：</p>
+            <div class="grid grid-cols-2 gap-8 my-6 w-full">
+                <div class="bg-surface p-6 rounded">
+                    <span class="text-primary text-4xl block mb-4">1 提取特征</span>
+                    <p class="text-[2.2rem] leading-[1.4] mb-0">轮廓的弧度、表皮的光泽、果柄的位置、切面的纹理...</p>
+                </div>
+                <div class="bg-surface p-6 rounded">
+                    <span class="text-primary text-4xl block mb-4">2 迁移学习</span>
+                    <p class="text-[2.2rem] leading-[1.4] mb-0">面对从未见过的品种（如深紫色、扁平的），依然能瞬间认出。</p>
+                </div>
+            </div>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">神经元的连接在不断的刺激中自行调整，最终在脑海中形成了一个模糊却精准的概念——“苹果”。</p>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">这就是现代 AI 模仿的学习方式。</p>
+            <p class="text-[2.4rem] leading-[1.5] text-muted mb-8 max-w-full text-left mt-12">然而，计算机科学家们花了几十年才明白这个道理...</p>
+        </div>
+
+        <!-- Slide 5: AI 发展的两条路线 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="5">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">AI 发展的两条路线</h2>
+            <div class="grid grid-cols-2 gap-16 w-full items-center">
+                <div>
+                    <h3 class="text-[2.5rem] font-semibold text-red-400 mb-6 mt-8 flex items-center">
+                        <svg class="w-12 h-12 mr-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="6" cy="19" r="3"/>
+                            <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+                            <circle cx="18" cy="5" r="3"/>
+                        </svg>
+                        规则驱动 (符号主义)
+                    </h3>
+                    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">早期 AI 走的是“专家系统”路线，工程师以“上帝视角”写代码定义世界。</p>
+                    <pre class="border-l-[8px] border-primary p-[2rem_3rem] text-[2.6rem] font-mono my-12 bg-surface rounded-lg w-full shadow-md block overflow-x-auto leading-relaxed text-[#f8f8f2]"><code><span class="text-[#ff79c6]">if</span> 圆 <span class="text-[#ff79c6]">and</span> 红 <span class="text-[#ff79c6]">and</span> 有柄:
+    <span class="text-[#ff79c6]">return</span> <span class="text-[#f1fa8c]">"苹果"</span></code></pre>
+                    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"><strong class="text-red-400">失败原因</strong>：规则写不完，被咬了一口、烂了一半、光影变化，这些算不算苹果？</p>
+                </div>
+                <div>
+                    <h3 class="text-[2.5rem] font-semibold text-primary mb-6 mt-8 flex items-center">
+                        <svg class="w-12 h-12 mr-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                        </svg>
+                        学习驱动 (联结主义)
+                    </h3>
+                    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">让机器像人一样去“看”、去“学”，1959 年计算机科学家亚瑟·塞缪尔定义机器学习</p>
+                    <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">Machine learning is the field of study that gives computers the ability to learn without being explicitly programmed.
+                    </blockquote>
+                    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"><strong>成功路径</strong>：机器不再依赖人类硬编码的规则，而是开始从海量数据中自主归纳特征。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: 智能的基础 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="6">
+            <h2 class="text-[4rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.1]">为什么 AI 直到最近十年才迎来大爆发？</h2>
+            
+            <p class="text-[2rem] leading-[1.4] text-[#D4D4D4] mb-6 max-w-full text-left">
+                经过数百万年演化的人类大脑，能以仅约 20 瓦的功率高效完成复杂的认知任务。而机器要模拟这种智能，本质上是一场依赖<strong>“暴力计算”</strong>的模拟游戏。这种“大力出奇迹”的做法，直到最近才集齐了两个关键拼图：
+            </p>
+
+            <div class="grid grid-cols-2 gap-8 w-full mb-6">
+                <!-- Point 1 -->
+                <div class="bg-surface p-6 rounded-lg border-l-4 border-primary">
+                    <h3 class="text-[2.2rem] font-bold text-primary mb-3 mt-0">1. 海量数据 (Data)</h3>
+                    <p class="text-[1.8rem] leading-[1.4] text-[#D4D4D4] mb-0">
+                        数据是模型训练的养料。如同人类通过经验学习，AI 需要通过海量样本来提取规律。互联网时代沉淀的文本、图像与视频——从维基百科到社交网络，从数字化典籍到网页记录——构成了人类文明的数字化全景。这些数据为 AI 提供了规模空前的训练集，打破了早期人工智能面临的“数据匮乏”瓶颈。
+                    </p>
+                </div>
+
+                <!-- Point 2 -->
+                <div class="bg-surface p-6 rounded-lg border-l-4 border-primary">
+                    <h3 class="text-[2.2rem] font-bold text-primary mb-3 mt-0">2. 超强算力 (Compute)</h3>
+                    <p class="text-[1.8rem] leading-[1.4] text-[#D4D4D4] mb-0">
+                        深度神经网络的训练涉及数十亿甚至万亿级参数的优化，每一次权重更新都需要海量的矩阵运算。得益于 GPU 并行计算架构的成熟、摩尔定律的红利以及专用 AI 芯片（如 TPU）的突破，现代硬件终于能够支撑起如此庞大的算力需求。
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-[2rem] leading-[1.4] text-muted mb-0 max-w-full pt-4 mt-12">
+                数据与算力，是智能得以落地的物理基础，二者缺一不可。正是它们在近十年的同步跃升，才把人工智能从实验室里的论文与原型，推向了每个人的手机屏幕。
+            </p>
+        </div>
+
+        <!-- Slide 7: 模型的本质 - 函数 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="7">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">寻找上帝公式：模型的本质</h2>
+            <div class="grid grid-cols-2 gap-12 w-full mb-6 flex-1 items-center">
+                <!-- Left: Text -->
+                <div>
+                    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left">
+                        在数学中，我们通过一个函数曲线来拟合坐标系中的数据点。机器学习本质上也是在拟合一个函数，使其可以：
+                    </p>
+                    
+                    <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-0 max-w-full list-inside text-left space-y-4 pl-8">
+                        <li>输入一张图片 $x$ <strong>$\rightarrow$</strong> 输出其代表的分类 $y$</li>
+                        <li>输入一段语音 $x$ <strong>$\rightarrow$</strong> 输出对应的文字 $y$</li>
+                        <li>输入前半语句 $x$ <strong>$\rightarrow$</strong> 输出后半句 $y$</li>
+                    </ul>
+                </div>
+
+                <!-- Right: Function Graph SVG -->
+                <div class="flex justify-center items-center h-full">
+                    <svg viewBox="0 0 400 300" class="w-full h-auto max-h-[400px] overflow-visible">
+                        <defs>
+                            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#666" />
+                            </marker>
+                        </defs>
+                        <!-- Axes -->
+                        <line x1="20" y1="280" x2="380" y2="280" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+                        <line x1="20" y1="280" x2="20" y2="20" stroke="#666" stroke-width="2" marker-end="url(#arrow)" />
+                        <text x="370" y="300" fill="#999" font-size="20">x</text>
+                        <text x="0" y="30" fill="#999" font-size="20">y</text>
+                        
+                        <!-- Data Points (Scatter) -->
+                        <circle cx="50" cy="250" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="80" cy="230" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="110" cy="240" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="140" cy="180" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="170" cy="160" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="200" cy="140" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="230" cy="150" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="260" cy="100" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="290" cy="80" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="320" cy="60" r="5" fill="#3ECF8E" opacity="0.6" />
+                        <circle cx="350" cy="40" r="5" fill="#3ECF8E" opacity="0.6" />
+
+                        <!-- Fitted Curve -->
+                        <path d="M 20 280 C 100 260, 200 140, 380 20" fill="none" stroke="#EDEDED" stroke-width="3" />
+                        
+                        <!-- Label -->
+                        <text x="260" y="50" fill="#EDEDED" font-size="24" font-family="serif" font-style="italic">y = f(x)</text>
+                    </svg>
+                </div>
+            </div>
+
+            <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.2rem] leading-[1.5] font-medium mt-auto bg-surface rounded-lg w-full shadow-md block">
+                机器学习“找到”的这个函数，就是<strong>模型</strong>，训练一个 AI 模型，本质上就是在海量的参数空间里，通过不断试错与优化，搜索出那个最能解释数据背后规律的函数。
+            </blockquote>
+        </div>
+
+        <!-- Slide 8: 模型的本质 - 拉马努金 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="8">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-12 text-left w-full leading-[1.2]">逼近世界的深层规律</h2>
+            
+            <div class="flex flex-col items-center w-full h-full">
+                <!-- Formula Section -->
+                <div class="w-full bg-surface p-4 rounded-xl border border-gray-800 shadow-2xl mb-8 relative overflow-hidden group">
+                    <div class="font-serif text-[3rem] text-white text-center py-4">
+                        $$ \frac{1}{\pi} = \frac{2\sqrt{2}}{9801} \sum_{k=0}^{\infty} \frac{(4k)! (1103 + 26390k)}{(k!)^4 396^{4k}} $$
+                    </div>
+                </div>
+
+                <!-- Contrast Section -->
+                <div class="grid grid-cols-2 gap-16 w-full">
+                    <!-- Human Intuition -->
+                    <div class="space-y-4">
+                        <h3 class="text-[2.6rem] font-bold text-white flex items-center gap-4">
+                            <span class="text-4xl">🧠</span> 天才的直觉
+                        </h3>
+                        <p class="text-[2.2rem] leading-[1.6] text-muted">
+                            拉马努金凭借惊人的直觉偶然“摸到”了数学深层结构的边缘。但人脑的<strong>算力与记忆</strong>有限，难以穷尽所有隐藏的秩序。
+                        </p>
+                    </div>
+
+                    <!-- Machine Learning -->
+                    <div class="space-y-4">
+                        <h3 class="text-[2.6rem] font-bold text-primary flex items-center gap-4">
+                            <span class="text-4xl">🤖</span> 机器学习探索
+                        </h3>
+                        <p class="text-[2.2rem] leading-[1.6] text-muted">
+                            机器学习将这种探索<strong>规模化、可重复</strong>。在庞大的参数空间里，通过海量计算持续逼近那个能完美描述世界规律的“函数”。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: AI 发展的三个阶段 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_6rem]" data-index="9">
+            <h2 class="text-[4.5rem] font-extrabold text-primary mb-8 text-left w-full leading-[1.2]">人工智能发展的三个阶段</h2>
+            
+            <div class="grid grid-cols-3 gap-8 w-full h-full pb-24 items-start">
+                <!-- Stage 1 -->
+                <div class="bg-surface p-8 rounded-lg border-t-8 border-primary flex flex-col h-full shadow-lg">
+                    <div class="mb-6 border-b border-gray-700 pb-4">
+                        <h3 class="text-[2.4rem] font-bold text-white mb-2">1. 机器学习</h3>
+                        <p class="text-[1.8rem] text-primary font-mono opacity-90">统计学的胜利</p>
+                    </div>
+                    <ul class="text-[2rem] leading-[1.5] text-[#D4D4D4] space-y-6 flex-1 list-disc list-inside">
+                        <li><strong class="text-white">数据驱动</strong>：不再依赖预设规则，从数据中学习概率。</li>
+                        <li><strong>典型案例</strong>：垃圾邮件分类（统计词频组合）。</li>
+                        <li><strong class="text-red-400">局限</strong>：依赖人工特征工程，在“人画的框”里优化。</li>
+                    </ul>
+                </div>
+
+                <!-- Stage 2 -->
+                <div class="bg-surface p-8 rounded-lg border-t-8 border-blue-500 flex flex-col h-full shadow-lg">
+                    <div class="mb-6 border-b border-gray-700 pb-4">
+                        <h3 class="text-[2.4rem] font-bold text-white mb-2">2. 深度学习</h3>
+                        <p class="text-[1.8rem] text-blue-400 font-mono opacity-90">感知智能的觉醒</p>
+                    </div>
+                    <ul class="text-[2rem] leading-[1.5] text-[#D4D4D4] space-y-6 flex-1 list-disc list-inside">
+                        <li><strong class="text-white">自动特征</strong>：神经网络模拟人脑，学会“看”和“听”。</li>
+                        <li><strong>典型案例</strong>：AlphaGo、人脸识别（直觉式策略）。</li>
+                        <li><strong class="text-red-400">局限</strong>：专用智能，缺乏跨任务迁移能力。</li>
+                    </ul>
+                </div>
+
+                <!-- Stage 3 -->
+                <div class="bg-surface p-8 rounded-lg border-t-8 border-purple-500 flex flex-col h-full shadow-lg">
+                    <div class="mb-6 border-b border-gray-700 pb-4">
+                        <h3 class="text-[2.4rem] font-bold text-white mb-2">3. 大语言模型</h3>
+                        <p class="text-[1.8rem] text-purple-400 font-mono opacity-90">生成式 AI 的兴起</p>
+                    </div>
+                    <ul class="text-[2rem] leading-[1.5] text-[#D4D4D4] space-y-6 flex-1 list-disc list-inside">
+                        <li><strong class="text-white">生成范式</strong>：从做“选择题”变为写“作文”（推理/创造）。</li>
+                        <li><strong>核心机制</strong>：Transformer + Next Token Prediction。</li>
+                        <li><strong class="text-purple-400">展望</strong>：跨领域通用能力，迈向 AGI。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: 语言即世界 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="10">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">为什么是语言模型？</h2>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">为什么语言模型率先通向了通用智能？</p>
+            <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+                "我的语言之界限，即我世界之界限。" —— 维特根斯坦
+            </blockquote>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"><strong>语言是世界的压缩</strong>。人类几千年的文字记录，编码了我们对世界全量的认知。</p>
+            <ul class="text-[2.4rem] mt-6 text-[#D4D4D4] list-inside text-left space-y-6">
+                <li>说“因为...所以...” $\rightarrow$ 编码了<strong>因果律</strong></li>
+                <li>说“虽然...但是...” $\rightarrow$ 编码了<strong>逻辑转折</strong></li>
+                <li>讲述一个故事 $\rightarrow$ 编码了<strong>时间、空间、社会规范</strong></li>
+            </ul>
+        </div>
+
+        <!-- Slide 11: 预测下一个字 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="11">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">预测下一个字，就是理解世界</h2>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">LLM 的训练目标看似简单：<strong>预测下一个字 (Next Token Prediction)</strong>。</p>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">但为了<strong>准确</strong>预测，模型被迫去“理解”深层逻辑：</p>
+            <div class="bg-surface p-6 rounded border-l-4 border-primary mt-4 w-full">
+                <ul class="text-[2.4rem] leading-[1.4] mb-0 list-inside text-left space-y-4">
+                    <li>要预测物理题的答案 $\rightarrow$ 必须学会<strong>物理规律</strong></li>
+                    <li>要预测代码的下一行 $\rightarrow$ 必须学会<strong>编程逻辑</strong></li>
+                    <li>要预测故事的结局 $\rightarrow$ 必须学会<strong>人物动机</strong></li>
+                </ul>
+            </div>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left mt-6">通过学习人类所有的文字，LLM 实际上是在学习人类对这个世界的全量认知。进而“涌现”出惊人的能力——理解逻辑、因果和常识，能够进行推理、创作代码、甚至模仿人类的情感。</p>
+        </div>
+
+        <!-- Slide 12: 空间智能 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="12">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-4 text-left w-full leading-[1.2]">空间智能：通往 AGI 的另一条路径</h2>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-10 max-w-full text-left">
+                斯坦福教授李飞飞的反共识观点：<strong>语言模型无法通往 AGI，空间智能才是最优路径。</strong>
+            </p>
+            
+            <!-- Comparison Section -->
+            <div class="grid grid-cols-2 gap-12 w-full mb-10">
+                <!-- Language -->
+                <div class="bg-surface p-4 rounded-xl border border-gray-700 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-8xl">🗣️</div>
+                    <h3 class="text-[2.8rem] font-bold text-muted mb-2">语言 (Language)</h3>
+                    <div class="text-[4rem] font-mono font-bold text-white mb-4">50万年 <span class="text-2xl font-normal text-muted">/ 演化史</span></div>
+                    <p class="text-[2.2rem] leading-[1.4] text-[#D4D4D4]">
+                        年轻得像“昨天”。它是世界的<strong>镜子</strong>，而非世界本身。LLM 仍被困在像素与符号的统计规律中。
+                    </p>
+                </div>
+
+                <!-- Spatial Intelligence -->
+                <div class="bg-surface p-4 rounded-xl border-2 border-primary relative overflow-hidden shadow-[0_0_30px_rgba(62,207,142,0.15)]">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-8xl">👁️</div>
+                    <h3 class="text-[2.8rem] font-bold text-primary mb-2">空间智能 (Spatial)</h3>
+                    <div class="text-[4rem] font-mono font-bold text-white mb-4">5亿年 <span class="text-2xl font-normal text-muted">/ 演化史</span></div>
+                    <p class="text-[2.2rem] leading-[1.4] text-[#D4D4D4]">
+                        源于寒武纪。<strong>“看见”</strong>驱动了大脑的爆发。生存需要感知三维物理（距离、速度、重力）。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bottom Section: World Labs & Conclusion -->
+            <div class="w-full bg-[#1A1A1A] p-8 rounded-xl border-l-8 border-primary flex items-center gap-8 mt-auto mb-8">
+                <div class="flex-1">
+                    <h4 class="text-[2.4rem] font-bold text-white mb-2">缺失的拼图：物理直觉</h4>
+                    <p class="text-[2rem] leading-[1.4] text-[#D4D4D4]">
+                        如果 AI 不懂“球推下桌子会掉落”，它就无法真正理解世界。<strong>World Labs</strong> 致力于构建具有物理一致性的世界模型。
+                    </p>
+                </div>
+                <div class="w-px h-24 bg-gray-700 mx-4"></div>
+                <div class="flex-1">
+                    <p class="text-[2.4rem] font-serif italic text-primary leading-[1.4]">
+                        “语言智能与空间智能，如同认知的双翼，缺一不可。”
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: 结语 -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="13">
+            <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">结语</h2>
+            
+            <div class="flex-1 w-full flex flex-col justify-around items-center">
+                <!-- Centered Formula -->
+                <div class="w-full bg-surface p-10 rounded-2xl border border-gray-700 shadow-[0_0_50px_rgba(62,207,142,0.1)] max-w-6xl transform hover:scale-105 transition-transform duration-500 text-center">
+                    <p class="text-[4rem] font-mono font-bold text-white m-0 tracking-tight">
+                        智能 = <span class="text-primary">学习能力</span> + <span class="text-primary">迁移能力</span>
+                    </p>
+                </div>
+
+                <!-- Question -->
+                <div class="max-w-[85%] relative text-center">
+                    <div class="absolute -left-12 -top-12 text-[8rem] text-primary opacity-20 font-serif">“</div>
+                    <p class="text-[2.8rem] leading-[1.6] text-[#D4D4D4] font-light">
+                        当数据与经验可以被大规模获取时，关键问题变成了：
+                    </p>
+                    <div class="mt-8 relative z-10">
+                        <strong class="text-white block text-[3.2rem] leading-[1.4] bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                            如何把这些数据变成可学习的任务，<br>
+                            让机器在反复试错中自己学出规律？
+                        </strong>
+                    </div>
+                    <div class="absolute -right-12 -bottom-24 text-[8rem] text-primary opacity-20 font-serif transform rotate-180">“</div>
+                </div>
+
+                <!-- Learning Path -->
+                <div class="w-full text-center">
+                    <p class="text-[1.8rem] text-muted mb-8 uppercase tracking-[0.2em] font-semibold">即将开启的学习路径</p>
+                    <div class="flex justify-center items-center gap-8 text-[2.2rem] font-bold text-white flex-wrap">
+                        <div class="px-10 py-6 bg-surface rounded-xl border-l-8 border-blue-500 shadow-lg flex items-center gap-4">
+                            <span class="text-3xl">🤖</span> 机器学习
+                        </div>
+                        <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        <div class="px-10 py-6 bg-surface rounded-xl border-l-8 border-purple-500 shadow-lg flex items-center gap-4">
+                            <span class="text-3xl">🧠</span> 深度学习
+                        </div>
+                        <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        <div class="px-10 py-6 bg-surface rounded-xl border-l-8 border-green-500 shadow-lg flex items-center gap-4">
+                            <span class="text-3xl">💬</span> NLP 与 LLM
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Progress Bar -->
+    <div class="fixed bottom-0 left-0 w-full h-2 bg-gray-800 z-50">
+        <div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <!-- Page Number -->
+    <div id="page-number" class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80">
+        1 / 14
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide-content');
+            const progressBar = document.getElementById('progress-bar');
+            const pageNumber = document.getElementById('page-number');
+            let currentIndex = 0;
+
+            function updateSlide(index) {
+                if (index < 0) index = 0;
+                if (index >= slides.length) index = slides.length - 1;
+
+                currentIndex = index;
+
+                // Update visibility
+                slides.forEach((slide, i) => {
+                    if (i === currentIndex) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+
+                // Update progress bar
+                const progress = ((currentIndex + 1) / slides.length) * 100;
+                progressBar.style.width = `${progress}%`;
+
+                // Update page number
+                pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+                
+                // Update URL hash
+                window.location.hash = `#${currentIndex + 1}`;
+            }
+
+            // Keyboard Navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+                    updateSlide(currentIndex + 1);
+                } else if (e.key === 'ArrowLeft') {
+                    updateSlide(currentIndex - 1);
+                }
+            });
+
+            // Initialize from URL hash
+            const hash = window.location.hash;
+            let initialIndex = 0;
+            if (hash) {
+                const page = parseInt(hash.substring(1), 10);
+                if (!isNaN(page)) {
+                    initialIndex = page - 1;
+                }
+            }
+            updateSlide(initialIndex);
+            
+            // Handle hash change
+            window.addEventListener('hashchange', () => {
+                const hash = window.location.hash;
+                if (hash) {
+                    const page = parseInt(hash.substring(1), 10);
+                    if (!isNaN(page)) {
+                        updateSlide(page - 1);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,4 +1,0 @@
-interface:
-  display_name: "HTML 幻灯片"
-  short_description: "生成并优化高质量的单文件 HTML 幻灯片。"
-  default_prompt: "创建或更新一个 HTML 幻灯片文件，要求信息层级清晰、响应式布局完善，并具备适合演讲者使用的结构。"
