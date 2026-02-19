@@ -72,9 +72,17 @@
 
     <!-- Slides Container -->
     <main id="slides-container" class="w-full h-full relative">
+
+        <!-- Slide 0: Word Cloud / Confusion -->
+        <div class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-0 overflow-hidden bg-bg" data-index="0">
+            <!-- Background Word Cloud Container -->
+            <div id="word-cloud-container" class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+                <!-- Words will be injected by JS -->
+            </div>
+        </div>
         
-        <!-- Slide 0: Title Slide -->
-        <div class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]" data-index="0">
+        <!-- Slide 1: Title Slide -->
+        <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]" data-index="1">
             <!-- Series Tag -->
             <div class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted">
                 <span class="text-primary font-bold">人工智能通识</span>
@@ -82,19 +90,24 @@
                 <span class="text-gray-300">导论</span>
             </div>
 
-            <!-- Icon: Brain/Chip -->
-            <div class="mb-12 relative">
+            <!-- Icon: Target/Core -->
+            <div class="mb-12 relative flex justify-center items-center">
                 <div class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"></div>
                 <svg class="w-48 h-48 text-primary relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 16v-4"/>
-                    <path d="M12 8h.01"/>
-                    <path d="M20.5 10a9 9 0 1 1-1.6-3.8"/>
-                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z" opacity="0.2"/>
-                    <path d="M9.5 12a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0z"/>
-                    <path d="M3 12h2"/>
-                    <path d="M19 12h2"/>
-                    <path d="M12 3v2"/>
-                    <path d="M12 19v2"/>
+                    <!-- Outer Ring with Gaps -->
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2" opacity="0.2"/>
+                    <path d="M12 4a8 8 0 0 1 8 8" stroke-dasharray="10 10"/>
+                    <path d="M12 20a8 8 0 0 1-8-8" stroke-dasharray="10 10"/>
+                    
+                    <!-- Crosshairs -->
+                    <path d="M12 2v4"/>
+                    <path d="M12 18v4"/>
+                    <path d="M2 12h4"/>
+                    <path d="M18 12h4"/>
+                    
+                    <!-- Inner Core -->
+                    <circle cx="12" cy="12" r="3"/>
+                    <circle cx="12" cy="12" r="1" fill="currentColor"/>
                 </svg>
             </div>
 
@@ -552,6 +565,105 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Word Cloud Generation
+            const cloudContainer = document.getElementById('word-cloud-container');
+            if (cloudContainer) {
+                const terms = [
+                    "LLM", "Transformer", "Attention", "Token", "Embedding", "Fine-tuning", "RLHF", "AGI", "GPT", "BERT", "LoRA", "RAG", "Agent", "Prompt", "Zero-shot", "CoT", "Hallucination", "Temperature", "Top-P", "Parameters", "Weights", "Bias", "Activation", "Backprop", "Gradient",
+                    "大语言模型", "神经网络", "深度学习", "强化学习", "提示词", "幻觉", "涌现", "对齐", "微调", "嵌入", "向量数据库", "智能体", "预训练", "推理", "训练", "损失函数", "梯度下降", "卷积神经网络", "循环神经网络", "多模态", "参数量", "算力", "显卡", "CUDA", "PPO", "DPO", "SFT", "MoE"
+                ];
+
+                const colors = ['#3ECF8E', '#3B82F6', '#A855F7', '#EC4899', '#F59E0B', '#EF4444', '#EDEDED', '#6B7280'];
+
+                // Sphere Configuration
+                let radius = Math.min(cloudContainer.offsetWidth, cloudContainer.offsetHeight) / 2.5;
+                const tags = [];
+                
+                // Fibonacci Sphere Distribution
+                const count = terms.length;
+                const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
+
+                terms.forEach((term, i) => {
+                    const el = document.createElement('div');
+                    el.textContent = term;
+                    // Use absolute positioning and center origin
+                    el.className = 'absolute font-bold whitespace-nowrap cursor-default select-none transition-opacity duration-300';
+                    el.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    el.style.left = '50%';
+                    el.style.top = '50%';
+                    el.style.fontSize = '2.5rem'; // Base font size
+                    
+                    cloudContainer.appendChild(el);
+
+                    // Spherical coordinates
+                    const y = 1 - (i / (count - 1)) * 2; // y goes from 1 to -1
+                    const r = Math.sqrt(1 - y * y); // radius at y
+                    const theta = phi * i; // golden angle increment
+
+                    const x = Math.cos(theta) * r;
+                    const z = Math.sin(theta) * r;
+
+                    tags.push({
+                        el,
+                        baseX: x,
+                        baseY: y,
+                        baseZ: z
+                    });
+                });
+
+                // Animation State
+                let angleX = 0;
+                let angleY = 0;
+                const rotationSpeed = 0.001;
+
+                function animate() {
+                    angleX += rotationSpeed;
+                    angleY += rotationSpeed * 0.5;
+
+                    // Update radius on resize (simple check)
+                    radius = Math.min(cloudContainer.offsetWidth, cloudContainer.offsetHeight) / 2.5;
+
+                    tags.forEach(tag => {
+                        // Rotation around Y axis (affects X and Z)
+                        const cx = Math.cos(angleY);
+                        const sx = Math.sin(angleY);
+                        // Rotation around X axis (affects Y and Z)
+                        const cy = Math.cos(angleX);
+                        const sy = Math.sin(angleX);
+
+                        // 3D Rotation Matrix application
+                        // We rotate the base normalized vectors to keep precision, then scale by radius
+                        let x = tag.baseX * radius;
+                        let y = tag.baseY * radius;
+                        let z = tag.baseZ * radius;
+
+                        // Rotate around Y
+                        let x1 = x * cx - z * sx;
+                        let z1 = z * cx + x * sx;
+                        
+                        // Rotate around X
+                        let y1 = y * cy - z1 * sy;
+                        let z2 = z1 * cy + y * sy;
+
+                        // Perspective projection
+                        const perspective = radius * 2;
+                        const scale = perspective / (perspective - z2);
+                        const opacity = (z2 + radius) / (2 * radius); // Map z to 0-1 opacity range roughly
+                        
+                        // Apply transform
+                        // translate(-50%, -50%) centers the element itself
+                        tag.el.style.transform = `translate(-50%, -50%) translate3d(${x1}px, ${y1}px, 0) scale(${scale})`;
+                        tag.el.style.opacity = Math.max(0.1, Math.min(1, opacity + 0.2)); // Keep visible
+                        tag.el.style.zIndex = Math.floor(scale * 100);
+                        tag.el.style.filter = `blur(${(1 - opacity) * 4}px)`;
+                    });
+
+                    requestAnimationFrame(animate);
+                }
+
+                animate();
+            }
+
             const slides = document.querySelectorAll('.slide-content');
             const progressBar = document.getElementById('progress-bar');
             const pageNumber = document.getElementById('page-number');
