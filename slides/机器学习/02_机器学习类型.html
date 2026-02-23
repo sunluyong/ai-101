@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>AI Course Slides - 机器学习类型</title>
+ <script src="https://cdn.tailwindcss.com"></script>
+ <script>
+ tailwind.config = {
+ theme: {
+ extend: {
+ colors: {
+ primary: '#3ECF8E', // Supabase Green
+ bg: '#121212', // Supabase Dark BG
+ surface: '#1C1C1C', // Darker Surface
+ text: '#EDEDED', // Off-white text
+ muted: '#A1A1A1', // Muted text
+ },
+ fontFamily: {
+ sans: ['Inter', 'sans-serif'],
+ }
+ }
+ }
+ }
+ </script>
+ <!-- MathJax Configuration -->
+ <script>
+ window.MathJax = {
+ tex: {
+ inlineMath: [['$', '$'], ['\\(', '\\)']],
+ displayMath: [['$$', '$$'], ['\\[', '\\]']],
+ processEscapes: true
+ },
+ svg: {
+ fontCache: 'global'
+ }
+ };
+ </script>
+ <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+ <style>
+ /* Custom scrollbar hide */
+ ::-webkit-scrollbar { display: none; }
+ 
+ body {
+ background-color: #121212;
+ color: #EDEDED;
+ overflow: hidden;
+ font-size: 2.4em;
+ }
+
+ /* Slide Transition Logic */
+ .slide-content {
+ opacity: 0;
+ transition: opacity 0.5s ease-in-out;
+ pointer-events: none;
+ }
+ 
+ .slide-content.active {
+ opacity: 1;
+ pointer-events: auto;
+ z-index: 10;
+ }
+
+ /* Strong Highlight */
+ strong {
+ color: #3ECF8E;
+ font-weight: 700;
+ }
+ </style>
+</head>
+<body class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black">
+
+ <!-- Slides Container -->
+ <main id="slides-container" class="w-full h-full relative">
+
+  <!-- Slide 1: Title -->
+  <div class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]" data-index="0">
+    <div class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted">
+      <span class="text-primary font-bold">人工智能通识</span>
+      <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+      <span class="text-gray-300">机器学习</span>
+    </div>
+
+    <div class="mb-12 relative">
+      <div class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"></div>
+      <svg class="w-48 h-48 text-primary relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+      </svg>
+    </div>
+
+    <h1 class="text-[7rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]">机器学习类型</h1>
+    <p class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]">监督、无监督、强化学习</p>
+  </div>
+
+  <!-- Slide 2: 机器学习的应用场景 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="1">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">机器学习的应用场景</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      机器学习在诸多领域都有广泛应用：
+    </p>
+    <div class="grid grid-cols-2 gap-8 w-full mb-8">
+      <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] max-w-full list-inside text-left space-y-4 list-disc">
+        <li>根据房屋面积、位置等预测房价</li>
+        <li>根据各项因素预测今天的股票价格</li>
+        <li>根据电子邮件内容预测是否为垃圾邮件</li>
+        <li>根据像素将图像识别为人脸或动物</li>
+      </ul>
+      <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] max-w-full list-inside text-left space-y-4 list-disc">
+        <li>向用户推荐他们可能喜欢的电影</li>
+        <li>处理长文本文档为摘要</li>
+        <li>训练自动驾驶汽车在城市中穿行</li>
+        <li>进行象棋或围棋对弈</li>
+      </ul>
+    </div>
+    <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-8 bg-surface rounded-lg w-full shadow-md block">
+      虽然应用场景各异，但很多问题的解决方式往往是通用的。例如，房价预测与股票预测属于同类问题，而垃圾邮件拦截与信用卡风险控制也可以用相似的模型解决。
+    </blockquote>
+  </div>
+
+  <!-- Slide 3: 什么是数据？ -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="2">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">数据、特征与标签：什么是数据？</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      在探讨机器学习的具体分类之前，我们需要先搞清楚一个最基本的问题——<strong>什么是数据？</strong>
+    </p>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      简单来说，数据是用于训练和测试机器学习模型的原始信息。在日常应用中，我们最常遇到的是<strong>结构化数据</strong>，即以表格形式（如 Excel 或数据库）存储的数据：
+    </p>
+    <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-inside text-left space-y-6 list-disc">
+      <li><strong>每一行</strong>代表一个具体的实体。</li>
+      <li><strong>每一列</strong>代表一项特定的属性。</li>
+    </ul>
+  </div>
+
+  <!-- Slide 4: 结构化数据示例 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="3">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">一个具体的结构化数据集</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      让我们来看一个具体的房价数据集表格：
+    </p>
+    
+    <div class="w-full overflow-hidden rounded-xl border border-gray-700 bg-surface">
+      <table class="w-full text-left text-[2.2rem]">
+        <thead class="bg-gray-800">
+          <tr>
+            <th class="p-6 font-semibold border-b border-gray-700">面积（㎡）</th>
+            <th class="p-6 font-semibold border-b border-gray-700">卧室数量</th>
+            <th class="p-6 font-semibold border-b border-gray-700">浴室数量</th>
+            <th class="p-6 font-semibold border-b border-gray-700">地段评分</th>
+            <th class="p-6 font-semibold border-b border-gray-700">房龄（年）</th>
+            <th class="p-6 font-bold border-b border-gray-700 text-primary">房价（万元）</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700 text-[#D4D4D4]">
+          <tr class="hover:bg-gray-800/50 transition-colors">
+            <td class="p-6">85</td><td class="p-6">2</td><td class="p-6">1</td><td class="p-6">6</td><td class="p-6">15</td><td class="p-6 font-bold text-white">180</td>
+          </tr>
+          <tr class="hover:bg-gray-800/50 transition-colors">
+            <td class="p-6">110</td><td class="p-6">3</td><td class="p-6">1</td><td class="p-6">7</td><td class="p-6">8</td><td class="p-6 font-bold text-white">320</td>
+          </tr>
+          <tr class="hover:bg-gray-800/50 transition-colors">
+            <td class="p-6">142</td><td class="p-6">4</td><td class="p-6">2</td><td class="p-6">9</td><td class="p-6">3</td><td class="p-6 font-bold text-white">510</td>
+          </tr>
+          <tr class="hover:bg-gray-800/50 transition-colors">
+            <td class="p-6">73</td><td class="p-6">2</td><td class="p-6">1</td><td class="p-6">4</td><td class="p-6">20</td><td class="p-6 font-bold text-white">120</td>
+          </tr>
+          <tr class="hover:bg-gray-800/50 transition-colors">
+            <td class="p-6">128</td><td class="p-6">3</td><td class="p-6">2</td><td class="p-6">8</td><td class="p-6">5</td><td class="p-6 font-bold text-white">450</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Slide 5: 核心概念解析 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="4">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">基础概念解析</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      借助上方的表格，我们来认识几个机器学习中最常用的基础概念：
+    </p>
+    <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-inside text-left space-y-6 list-disc">
+      <li><strong>数据集（Dataset）：</strong> 通常指上面这一整张数据表格。</li>
+      <li><strong>数据点（Data Point）：</strong> 也称样本，数据集中的单条记录，<strong>表格的每一行就是一个数据点</strong>。</li>
+      <li><strong>特征（Feature）：</strong> 表示数据的属性或性质。在表格中，<strong>特征就是表格的列</strong>。例如，每个房屋有 5 个特征，我们就称这个数据集的<strong>维度（Dimension）</strong>为 5。</li>
+      <li><strong>标签（Label）：</strong> 模型需要重点预测的“目标变量”（即表格最后一列）。所谓预测，本质上就是让机器通过学习特征，去推算数据中的标签。</li>
+    </ul>
+  </div>
+
+  <!-- Slide 6: 机器学习的三大分支 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="5">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">机器学习的三大分支</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      根据数据集是否带有标签，以及学习方式的不同，机器学习衍生出三大主要分支：
+    </p>
+    <div class="grid grid-cols-1 gap-6 w-full mt-4">
+      <div class="bg-surface p-8 rounded-xl border-l-[6px] border-[#3ECF8E] shadow-sm">
+        <h3 class="text-[2.5rem] font-semibold text-white mb-4 mt-0">1. 监督学习（Supervised Learning）</h3>
+        <p class="text-[2.2rem] leading-[1.4] mb-0 text-gray-300">数据集中的每个数据点都<strong>包含标签</strong>（如已知房价），机器通过学习特征与标签的关系进行预测。</p>
+      </div>
+      <div class="bg-surface p-8 rounded-xl border-l-[6px] border-[#3ECF8E] shadow-sm">
+        <h3 class="text-[2.5rem] font-semibold text-white mb-4 mt-0">2. 无监督学习（Unsupervised Learning）</h3>
+        <p class="text-[2.2rem] leading-[1.4] mb-0 text-gray-300">数据点<strong>不包含标签</strong>，机器需要自己在数据中寻找隐藏的结构或规律。</p>
+      </div>
+      <div class="bg-surface p-8 rounded-xl border-l-[6px] border-[#3ECF8E] shadow-sm">
+        <h3 class="text-[2.5rem] font-semibold text-white mb-4 mt-0">3. 强化学习（Reinforcement Learning）</h3>
+        <p class="text-[2.2rem] leading-[1.4] mb-0 text-gray-300">在动态环境中通过<strong>不断试错</strong>，学习如何做出更优决策以获得最大奖励。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: 监督学习简介 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="6">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">监督学习：处理标签数据</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      监督学习的应用十分广泛，涵盖图像识别、文本处理、推荐系统等众多领域。
+    </p>
+    <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+      其核心目标是<strong>根据已有数据预测标签</strong>。
+    </blockquote>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      在房价数据集中，“房价”就是我们要预测的标签。模型通过学习这些现有的历史数据找出规律，进而预测新数据的标签。这意味着，如果我们向模型输入一套缺失价格信息的新房子的数据，模型就能自动预测出它的价格。
+    </p>
+  </div>
+
+  <!-- Slide 8: 监督学习的两类模型 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="7">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">监督学习的两类核心模型</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      针对不同类型的标签数据，监督学习衍生出了两类模型：
+    </p>
+    
+    <div class="grid grid-cols-2 gap-10 w-full h-full">
+      <div class="bg-surface p-10 rounded-xl border border-gray-700">
+        <h3 class="text-[2.8rem] font-bold text-primary mb-6 mt-0">回归模型 (Regression)</h3>
+        <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-6">
+          用于预测<strong>连续的数值型数据</strong>。模型的输出是一个具体的数值。
+        </p>
+        <ul class="text-[2rem] leading-[1.6] text-gray-400 list-disc list-inside space-y-3">
+          <li><strong>应用场景：</strong>预测房屋价格、股票走势。</li>
+          <li><strong>常见算法：</strong>线性回归、决策树、随机森林、XGBoost。</li>
+        </ul>
+      </div>
+      
+      <div class="bg-surface p-10 rounded-xl border border-gray-700">
+        <h3 class="text-[2.8rem] font-bold text-primary mb-6 mt-0">分类模型 (Classification)</h3>
+        <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-6">
+          用于预测<strong>离散的分类型数据</strong>（如“猫/狗”、“晴天/雨天”）。
+        </p>
+        <ul class="text-[2rem] leading-[1.6] text-gray-400 list-disc list-inside space-y-3">
+          <li><strong>应用场景：</strong>图像识别、垃圾邮件检测、客户群体划分。</li>
+          <li><strong>常见算法：</strong>感知器、逻辑回归、朴素贝叶斯、K近邻、支持向量机(SVM)。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: 无监督学习简介 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="8">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">无监督学习：处理无标签的数据</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      在现实的业务场景中，获取带有标签的数据往往成本很高，我们手中绝大多数的数据其实是<strong>没有标签</strong>的。
+    </p>
+    <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+      无监督学习的目标不再是去预测某个具体的数值或类别，而是让模型自行探索，发现数据内部隐藏的结构、模式或规律。
+    </blockquote>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      无监督学习在实际业务中同样十分常见，主要包括三个方向：<strong>聚类、降维与生成算法</strong>。
+    </p>
+  </div>
+
+  <!-- Slide 10: 聚类算法 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="9">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">无监督学习：聚类算法</h2>
+    <h3 class="text-[3rem] font-semibold text-white mb-6 mt-0">核心作用：将数据集分组</h3>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      面对海量数据时分类无从下手？聚类算法会计算数据之间的相似度，将行为模式相似的数据自动归拢到一个组（簇）里，实现物以类聚。
+    </p>
+    
+    <div class="bg-surface p-8 rounded-xl border border-gray-700 w-full mb-8">
+      <h4 class="text-[2.5rem] font-bold text-primary mb-4 mt-0">案例：电商百万用户精准营销</h4>
+      <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-0">
+        面对海量浏览记录，人工无法打标签。通过聚类，平台能在无干预情况下，自动梳理出“价格敏感型”或“品牌忠诚型”等清晰用户画像，方便精准推荐。
+      </p>
+    </div>
+    <p class="text-[2.2rem] text-muted italic">代表算法：K-means 算法</p>
+  </div>
+
+  <!-- Slide 11: 降维算法 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="10">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">无监督学习：降维算法</h2>
+    <h3 class="text-[3rem] font-semibold text-white mb-6 mt-0">核心作用：信息整合与特征重构</h3>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      在处理复杂数据时，特征过载会导致“维度灾难”。降维的目标是在尽量<strong>不丢失关键信息的前提下，极大地简化数据集</strong>。
+    </p>
+    
+    <div class="bg-surface p-8 rounded-xl border border-gray-700 w-full mb-8">
+      <h4 class="text-[2.5rem] font-bold text-primary mb-4 mt-0">案例：房价预测中的周边环境特征</h4>
+      <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-0">
+        “距离地铁站米数”、“学校数量”、“商场个数”等几十个特征会让计算缓慢且冗余。降维算法能捕捉这些特征的相关性，将它们合并压缩成一个新特征，如“综合地段评分”。
+      </p>
+    </div>
+    <p class="text-[2.2rem] text-muted italic">代表算法：主成分分析（PCA）</p>
+  </div>
+
+  <!-- Slide 12: 生成算法 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="11">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">无监督学习：生成算法 (AIGC)</h2>
+    <h3 class="text-[3rem] font-semibold text-white mb-6 mt-0">核心作用：从数据中创造全新内容</h3>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      当面临数据匮乏（如医疗AI隐私限制）或创作瓶颈时，生成算法通过深度学习真实数据的分布规律，生成<strong>现实中不存在的全新数据点</strong>。
+    </p>
+    
+    <div class="bg-surface p-8 rounded-xl border border-gray-700 w-full mb-8">
+      <h4 class="text-[2.5rem] font-bold text-primary mb-4 mt-0">应用场景</h4>
+      <ul class="text-[2.2rem] leading-[1.6] text-gray-300 list-disc list-inside space-y-3 mb-0">
+        <li>生成极其逼真的虚拟人脸或病理切片，低成本扩充模型训练集。</li>
+        <li>AIGC 应用：AI 绘画工具仅凭文本提示生成高质量画作。</li>
+      </ul>
+    </div>
+    <p class="text-[2.2rem] text-muted italic">代表算法：生成对抗网络（GAN）</p>
+  </div>
+
+  <!-- Slide 13: 强化学习简介 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="12">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">强化学习：在动态环境中试错</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      在复杂的现实场景中（如自动驾驶实时决策、围棋落子），我们面临的是高度动态的挑战，并没有现成的静态历史数据集。
+    </p>
+    <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+      强化学习的核心是：在不断试错的过程中，学习如何做出更优决策。
+    </blockquote>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      <strong>运行机制：</strong> 设定一个智能体（Agent）置身于环境中。智能体采取动作，环境根据动作的好坏实时反馈<strong>奖励（Reward）</strong>或<strong>惩罚（Penalty）</strong>。终极目标是探索出一套能获得最大长期累计奖励的策略。
+    </p>
+  </div>
+
+  <!-- Slide 14: 强化学习应用 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="13">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">强化学习的里程碑与应用</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-12 max-w-full text-left">
+      最广为人知的里程碑是 2016 年击败人类围棋世界冠军的 <strong>AlphaGo</strong>，其通过左右互搏、在数百万局的试错中进化出了超越人类的策略。
+    </p>
+    
+    <div class="grid grid-cols-2 gap-8 w-full">
+      <div>
+        <h3 class="text-[2.8rem] font-semibold text-white mb-6 mt-0">广泛应用领域：</h3>
+        <ul class="text-[2.2rem] leading-[1.6] text-gray-300 list-disc list-inside space-y-4">
+          <li>复杂棋牌与电子游戏</li>
+          <li>机器人姿态控制</li>
+          <li>工业机械臂调度</li>
+          <li>量化交易策略制定</li>
+          <li>大型语言模型的人类意图对齐</li>
+        </ul>
+      </div>
+      <div class="bg-surface p-8 rounded-xl border border-gray-700 flex flex-col justify-center">
+        <h3 class="text-[2.5rem] font-bold text-primary mb-4 mt-0">关键技术</h3>
+        <p class="text-[2.2rem] leading-[1.6] text-gray-300 mb-0">
+          经典的 Q-Learning 算法，以及结合了神经网络的深度强化学习（DRL）技术，正在让 AI 学会像人类一样思考与行动。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 15: 总结与下期预告 -->
+  <div class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]" data-index="14">
+    <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">本节总结</h2>
+    <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+      今天我们了解了机器学习的核心分类及其在现实生活中的应用场景。
+    </p>
+    
+    <div class="grid grid-cols-3 gap-6 w-full mb-12">
+      <div class="bg-surface p-8 rounded-xl border border-gray-700 shadow-sm">
+        <h3 class="text-[2.5rem] font-bold text-white mb-4 mt-0 text-center">监督学习</h3>
+        <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-0 text-center">
+          基于标签数据进行学习，包括<strong>分类模型</strong>和<strong>回归模型</strong>。
+        </p>
+      </div>
+      <div class="bg-surface p-8 rounded-xl border border-gray-700 shadow-sm">
+        <h3 class="text-[2.5rem] font-bold text-white mb-4 mt-0 text-center">无监督学习</h3>
+        <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-0 text-center">
+          探索无标签数据的内在结构，包含<strong>聚类</strong>、<strong>降维</strong>与<strong>生成算法</strong>。
+        </p>
+      </div>
+      <div class="bg-surface p-8 rounded-xl border border-gray-700 shadow-sm">
+        <h3 class="text-[2.5rem] font-bold text-white mb-4 mt-0 text-center">强化学习</h3>
+        <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-0 text-center">
+          在动态环境中通过<strong>不断试错</strong>与奖惩机制，学习寻找更优决策。
+        </p>
+      </div>
+    </div>
+
+    <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold bg-surface rounded-lg w-full shadow-md block relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 text-primary opacity-10">
+        <svg class="w-64 h-64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      </div>
+      <div class="relative z-10">
+        <span class="text-primary uppercase tracking-wider text-[2rem] font-mono mb-2 block">下期预告</span>
+        最基础但也最重要的监督学习算法 —— <strong>线性回归 (Linear Regression)</strong>。<br/>
+        <span class="text-[2.2rem] text-gray-400 font-normal mt-2 block">我们将深入剖析它是如何从一堆杂乱无章的数据点中，拟合出一条精准预测房价的“完美直线”的。</span>
+      </div>
+    </blockquote>
+  </div>
+
+ </main>
+
+ <!-- Progress Bar -->
+ <div class="fixed bottom-0 left-0 w-full h-2 bg-gray-800 z-50">
+ <div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
+ </div>
+
+ <!-- Page Number -->
+ <div id="page-number" class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80">
+ 1 / 1
+ </div>
+
+ <script>
+ document.addEventListener('DOMContentLoaded', () => {
+ const slides = document.querySelectorAll('.slide-content');
+ const progressBar = document.getElementById('progress-bar');
+ const pageNumber = document.getElementById('page-number');
+ let currentIndex = 0;
+
+ function updateSlide(index) {
+ if (index < 0) index = 0;
+ if (index >= slides.length) index = slides.length - 1;
+
+ currentIndex = index;
+
+ // Update visibility
+ slides.forEach((slide, i) => {
+ if (i === currentIndex) {
+ slide.classList.add('active');
+ } else {
+ slide.classList.remove('active');
+ }
+ });
+
+ // Update progress bar
+ const progress = ((currentIndex + 1) / slides.length) * 100;
+ progressBar.style.width = `${progress}%`;
+
+ // Update page number
+ pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+ 
+ // Update URL hash
+ window.location.hash = `#${currentIndex + 1}`;
+ }
+
+ // Keyboard Navigation
+ document.addEventListener('keydown', (e) => {
+ if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+ updateSlide(currentIndex + 1);
+ } else if (e.key === 'ArrowLeft') {
+ updateSlide(currentIndex - 1);
+ }
+ });
+
+ // Initialize from URL hash
+ const hash = window.location.hash;
+ let initialIndex = 0;
+ if (hash) {
+ const page = parseInt(hash.substring(1), 10);
+ if (!isNaN(page)) {
+ initialIndex = page - 1;
+ }
+ }
+ updateSlide(initialIndex);
+ 
+ // Handle hash change (e.g. browser back button)
+ window.addEventListener('hashchange', () => {
+ const hash = window.location.hash;
+ if (hash) {
+ const page = parseInt(hash.substring(1), 10);
+ if (!isNaN(page)) {
+ updateSlide(page - 1);
+ }
+ }
+ });
+ });
+ </script>
+</body>
+</html>
