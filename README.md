@@ -2,32 +2,10 @@
 
 本课程旨在帮助学习者建立对人工智能的系统性认知，从基础概念到前沿技术，循序渐进地掌握 AI 核心知识体系。
 
-## 课程大纲
-
-### 机器学习
-- 监督学习与非监督学习
-- 特征工程
-- 模型评估与优化
-- 经典算法实践
-
-### 深度学习
-- 神经网络基础
-- 模型训练
-- 卷积神经网络 (CNN)
-- 循环神经网络 (RNN)
-
-### 自然语言处理 (NLP)
-- 文本表示与词向量
-- 序列模型
-- 注意力机制
-- NLP 核心任务
-
-### 大语言模型 (LLM)
-- Transformer 架构
-- 预训练与微调
-- Prompt Engineering
-- LLM 应用实践
-
+- 文本内容 [https://www.yuque.com/sunluyong/blz6hd](https://www.yuque.com/sunluyong/blz6hd)
+- 视频讲解 [https://space.bilibili.com/291215958](https://space.bilibili.com/291215958)
+- PPT [./slides](./slides)
+- 代码示例 [./code](./code)
 ## License
 
 MIT
