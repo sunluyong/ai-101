@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>线性回归 - AI Course Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#3ECF8E', // Supabase Green
+              bg: '#121212', // Supabase Dark BG
+              surface: '#1C1C1C', // Darker Surface
+              text: '#EDEDED', // Off-white text
+              muted: '#A1A1A1', // Muted text
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- MathJax Configuration -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ['$', '$'],
+            ['\\(', '\\)'],
+          ],
+          displayMath: [
+            ['$$', '$$'],
+            ['\\[', '\\]'],
+          ],
+          processEscapes: true,
+        },
+        svg: {
+          fontCache: 'global',
+        },
+      };
+    </script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    
+    <!-- PrismJS syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    
+    <style>
+      /* Custom scrollbar hide for general body but allow custom classes */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      
+      /* PrismJS adjustments for scaling */
+      pre[class*="language-"] {
+        font-size: 1.8rem !important;
+        line-height: 1.5 !important;
+      }
+      code[class*="language-"] {
+        font-size: inherit !important;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar {
+        display: block;
+        width: 8px;
+        height: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.2);
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #3ECF8E;
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #2ba76d;
+      }
+
+      body {
+        background-color: #121212;
+        color: #ededed;
+        overflow: hidden;
+        font-size: 2.4em;
+      }
+
+      /* Slide Transition Logic */
+      .slide-content {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        pointer-events: none;
+      }
+
+      .slide-content.active {
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 10;
+      }
+
+      /* Strong Highlight */
+      strong {
+        color: #3ecf8e;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black"
+  >
+    <!-- Slides Container -->
+    <main id="slides-container" class="w-full h-full relative">
+      <!-- Slide 1: Title -->
+      <div
+        class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]"
+        data-index="0"
+      >
+        <div
+          class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted"
+        >
+          <span class="text-primary font-bold">人工智能通识</span>
+          <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+          <span class="text-gray-300">机器学习</span>
+        </div>
+        <div class="mb-12 relative">
+          <div
+            class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"
+          ></div>
+          <svg
+            class="w-48 h-48 text-primary relative z-10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="M7 16l4-4 4 4 6-6" />
+          </svg>
+        </div>
+        <h1
+          class="text-[7rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]"
+        >
+          线性回归
+        </h1>
+        <p
+          class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]"
+        >
+          理解机器学习的第一个模型
+        </p>
+      </div>
+
+      <!-- Slide 2: 预测房价 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="1"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          预测房价
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          为了直观地理解线性回归，我们先来看一个生活中的例子。假设我们收集到了某地区的一批房价数据：
+        </p>
+
+        <div class="w-full flex justify-between items-center gap-12 mt-4">
+          <div class="w-[55%] flex justify-center">
+            <table class="text-[2.2rem] w-full text-center border-collapse bg-surface rounded-xl overflow-hidden shadow-lg">
+              <thead class="bg-gray-800/50">
+                <tr class="border-b-2 border-primary text-text">
+                  <th class="p-4 font-semibold">面积（㎡）</th>
+                  <th class="p-4 font-semibold text-primary">总价（万）</th>
+                </tr>
+              </thead>
+              <tbody class="text-[#D4D4D4]">
+                <tr class="border-b border-gray-700/50"><td class="p-4">50</td><td class="p-4 font-bold text-white">122</td></tr>
+                <tr class="border-b border-gray-700/50"><td class="p-4">70</td><td class="p-4 font-bold text-white">157</td></tr>
+                <tr class="border-b border-gray-700/50"><td class="p-4">90</td><td class="p-4 font-bold text-white">203</td></tr>
+                <tr class="border-b border-gray-700/50"><td class="p-4">110</td><td class="p-4 font-bold text-white">255</td></tr>
+                <tr><td class="p-4">130</td><td class="p-4 font-bold text-white">303</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="w-[45%]">
+            <blockquote
+              class="border-l-[8px] border-primary p-[3rem] not-italic text-text text-[2.6rem] font-semibold bg-surface rounded-lg w-full shadow-md block leading-[1.6]"
+            >
+              <span class="text-primary text-[3rem] block mb-4">🤔 想一想：</span>
+              凭直觉猜一下：一套 <strong class="text-white">100 平米</strong>的房子，大概多少钱？
+            </blockquote>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: 预测房价 - 散点图 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="2"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          预测房价：数据可视化
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          从数据中不难看出，<strong>面积越大，房价越高</strong>。100 平米介于 90
+          和 110 之间，所以合理的猜测应该落在 203～255 万之间。
+        </p>
+        
+        <div class="w-full flex justify-between items-stretch gap-8 flex-1 min-h-0 pb-4">
+          <div class="w-1/2 overflow-hidden text-[1.4rem]">
+            <div class="h-full overflow-y-auto custom-scrollbar">
+<pre class="!my-0 !text-[1.4rem] !bg-[#1E1E1E] !rounded-xl"><code class="language-python">import matplotlib.pyplot as plt
+
+# 1️⃣ 准备数据
+area = [50, 70, 90, 110, 130]    # 面积（㎡）
+price = [122, 157, 203, 255, 303] # 总价（万）
+
+# 2️⃣ 创建图表
+plt.figure(figsize=(8, 6))
+plt.scatter(area, price, color='blue', s=80)
+
+# 3️⃣ 设置坐标轴
+plt.xlabel('面积（㎡）')
+plt.ylabel('总价（万）')
+plt.title('房价数据散点图')
+
+# 4️⃣ 标注与显示
+for a, p in zip(area, price):
+    plt.text(a + 3, p, f'({a}㎡,{p}万)')
+
+plt.grid(True, linestyle='--')
+plt.show()</code></pre>
+            </div>
+          </div>
+          
+          <div class="w-1/2 flex justify-center items-center">
+            <img
+              src="https://cdn.nlark.com/yuque/0/2026/png/87727/1772933099990-25a2f486-b4f0-4ae2-81e9-f8e7d00e6806.png"
+              alt="房价数据散点图"
+              class="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-gray-800"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: 预测房价 - 趋势线 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="3"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          寻找规律：趋势线
+        </h2>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold mb-6 bg-surface rounded-lg w-full shadow-md block"
+        >
+          能不能画一条直线，尽可能地穿过这些点，以此来描述面积和房价之间的关系？
+        </blockquote>
+        
+        <div class="w-full flex justify-between items-center gap-12 flex-1 min-h-0 pb-4">
+          <div class="w-[45%] flex justify-center items-center h-full">
+            <img
+              src="https://cdn.nlark.com/yuque/0/2026/png/87727/1772935440150-d88c5f73-2551-45b5-b808-c94d46a9315c.png"
+              alt="房价与面积关系及趋势预测"
+              class="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-gray-800"
+            />
+          </div>
+          
+          <div class="w-[55%] flex flex-col justify-center">
+            <p
+              class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+            >
+              如果这条直线画得足够好，我们就可以用它来预测未知的房价。比如直线方程可能是：
+            </p>
+            <div class="bg-surface p-4 rounded-xl border border-gray-800 shadow-xl w-full">
+              <div class="text-[2.5rem] font-bold text-center text-primary mb-4 border-b border-gray-700 pb-3">
+                $$ \text{房价} = 2.2 \times \text{面积} + 10 $$
+              </div>
+              <div class="text-[2.4rem] text-[#D4D4D4] leading-[1.6]">
+                <p class="mb-4">代入 <strong class="text-white">100 平方米</strong>，就能算出：</p>
+                <div class="text-[2.6rem] text-center text-white font-mono bg-gray-800/50 p-4 rounded-lg mt-4">
+                  预测房价 ≈ 2.2 × 100 + 10 = <span class="text-primary font-bold">230万</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5: 什么是线性回归？ -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="4"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          什么是线性回归？
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          <strong>线性回归（Linear Regression）</strong
+          >是机器学习中最经典的模型之一，它通过构建线性方程来拟合数据的内在分布规律，从而实现对连续数值的预测。
+        </p>
+
+        <div
+          class="bg-surface p-8 rounded-xl w-full mb-8 border border-gray-800"
+        >
+          <h3 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+            线性 ≠ 直线
+          </h3>
+          <p class="text-[2.4rem] leading-[1.4] mb-6 text-[#D4D4D4]">
+            在数学上，线性描述的是输入与输出之间按比例变化、可叠加的关系。一个映射
+            $ f $ 满足：
+          </p>
+          <ul
+            class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-0 max-w-full list-disc list-inside text-left space-y-4"
+          >
+            <li><strong>齐次性</strong>: $ f(ax)=a \cdot f(x) $</li>
+            <li><strong>可加性</strong>: $ f(x+y)=f(x)+f(y) $</li>
+          </ul>
+        </div>
+        <p class="text-[2.2rem] leading-[1.5] text-muted max-w-full text-left">
+          几何解释：在一维空间中，线性关系表现为一条直线；在高维空间中，表现为平面或超平面。
+        </p>
+      </div>
+
+      <!-- Slide 5.5: 回归的由来 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          “回归”的由来
+        </h2>
+        <div
+          class="bg-surface p-8 rounded-xl w-full mb-8 border border-gray-800"
+        >
+          <h3 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+            高尔顿的“回归均值”
+          </h3>
+          <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-0">
+            “回归”（Regression）一词源于统计学家弗朗西斯·高尔顿（Francis
+            Galton）的经典研究。他观察到，身高极高或极矮的父母，其子女的身高往往会向群体平均值靠拢，这一现象被称为<strong>“回归均值”</strong>。
+          </p>
+        </div>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-4 bg-surface rounded-lg w-full shadow-md block"
+        >
+          在机器学习领域，回归的概念被进一步引申：<strong
+            >旨在通过数据建模变量间的映射关系，进而实现对连续数值的预测。</strong
+          >
+        </blockquote>
+      </div>
+
+      <!-- Slide 6: 模型公式 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="5"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          模型公式
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          最简单的线性回归模型只有一个特征（如房屋面积），预测公式为：
+        </p>
+
+        <div class="w-full flex justify-center mb-12">
+          <div
+            class="text-[4rem] font-bold text-white bg-surface px-12 rounded-2xl border-2 border-primary shadow-[0_0_30px_rgba(62,207,142,0.2)]"
+          >
+            $$ \hat{y}=wx+b $$
+          </div>
+        </div>
+
+        <ul
+          class="text-[2.4rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left space-y-6"
+        >
+          <li><strong>$ \hat y $</strong>：模型的预测值（如预测房价）</li>
+          <li><strong>$ x $</strong>：输入特征（如面积）</li>
+          <li>
+            <strong>$ w $</strong>：权重（weight，斜率）——面积每增加
+            1㎡，房价变化多少
+          </li>
+          <li>
+            <strong>$ b $</strong>：偏置（bias，截距）——当面积为 0
+            时的理论基准值
+          </li>
+        </ul>
+
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-8 bg-surface rounded-lg w-full shadow-md block"
+        >
+          这里的 $w$ 和 $b$ 就是模型需要学习的参数。训练模型本质上就是<strong
+            >搜索一组最合适的 $w$ 和 $b$</strong
+          >。
+        </blockquote>
+      </div>
+
+      <!-- Slide 7: 损失函数 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="6"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          损失函数：衡量模型准不准
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          模型要找到最好的参数，首先得回答一个问题：当前这组参数到底好不好？<br />
+          我们需要一种方法来度量预测值与真实值之间的偏差——这就是<strong
+            >损失函数（Loss Function）</strong
+          >。
+        </p>
+
+        <div
+          class="bg-surface p-8 rounded-xl w-full mb-8 border border-gray-800"
+        >
+          <h3 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+            均方误差（Mean Squared Error, MSE）
+          </h3>
+          <ul
+            class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-8 max-w-full list-decimal list-inside text-left space-y-4"
+          >
+            <li>对每个样本，计算 预测值 − 真实值（即误差）；</li>
+            <li>将误差取平方（消除正负号、放大较大误差）；</li>
+            <li>对所有样本求平均。</li>
+          </ul>
+          <div class="text-[3rem] text-center w-full mb-4">
+            $$ MSE = \frac{1}{n} \sum (\hat y - y)^2 $$
+          </div>
+        </div>
+
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-4 bg-surface rounded-lg w-full shadow-md block"
+        >
+          一句话概括：<strong>预测值离真实值越远，损失越大。</strong>模型训练的目标，就是让损失函数的值尽可能小。
+        </blockquote>
+      </div>
+
+      <!-- Slide 8: 损失函数 - 为什么用 MSE -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="7"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          为什么使用 MSE？
+        </h2>
+        
+        <div class="w-full flex justify-between items-center gap-12 flex-1 min-h-0 pb-4 mt-4">
+          <div class="w-1/2 flex flex-col justify-center h-full">
+            <p
+              class="text-[2.6rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+            >
+              使用均方误差（MSE）有两个主要好处：
+            </p>
+            <ul
+              class="text-[2.4rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-decimal list-inside text-left space-y-8"
+            >
+              <li>
+                <strong class="text-primary text-[2.6rem]">消除正负号的影响</strong
+                ><br>让误差绝对值化，防止求和之后正负误差互相抵消。
+              </li>
+              <li>
+                <strong class="text-primary text-[2.6rem]">放大误差便于优化</strong><br>例如误差为 3 和 0.4，平方后变为 9
+                和 0.16，差异更明显。
+              </li>
+            </ul>
+          </div>
+          <div class="w-1/2 flex justify-center items-center h-full">
+            <img
+              src="https://cdn.nlark.com/yuque/0/2026/png/87727/1772960818626-bcc48f77-45bd-41e0-a1da-8c99e26e9daa.png"
+              alt="MSE 误差平方示意图"
+              class="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-gray-800 bg-white p-4"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 9: 梯度下降 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="8"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          梯度下降：寻找最优解
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          知道当前模型有多不准之后，如何自动调整 $w$ 和 $b$？<br />
+          最通用的算法是<strong>梯度下降（Gradient Descent）</strong
+          >：沿着损失函数下降最快的方向，逐步调整参数，直至找到最优解。
+        </p>
+
+        <div
+          class="bg-surface p-8 rounded-xl w-full mb-8 border border-gray-800"
+        >
+          <h3 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+            形象比喻：蒙眼下山
+          </h3>
+          <ul
+            class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-0 max-w-full list-decimal list-inside text-left space-y-4"
+          >
+            <li>
+              <strong>感知坡度（计算梯度）</strong
+              >：盲人用脚探知当前所处的坡度方向，确定哪里是下坡；
+            </li>
+            <li>
+              <strong>迈出一小步（更新参数）</strong
+              >：顺着最陡峭的下坡方向（负梯度方向），迈出一步；
+            </li>
+            <li>
+              <strong>循环往复（迭代优化）</strong
+              >：在新位置继续感知坡度，继续向下走；
+            </li>
+            <li>
+              <strong>到达谷底（模型收敛）</strong
+              >：当走到再也没有下坡路的地方，即认为到达了最低点。
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 10: 梯度下降与模型训练 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="9"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          模型训练的核心循环
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          把下山的比喻和机器学习概念对应起来：
+        </p>
+
+        <ul
+          class="text-[2.4rem] leading-[1.6] text-[#D4D4D4] mb-12 max-w-full list-disc list-inside text-left space-y-6"
+        >
+          <li>山的当前高度 = <strong>损失函数的值（Loss）</strong></li>
+          <li>下坡的方向 = <strong>梯度（Gradient，即导数）</strong></li>
+          <li>每一步迈多大 = <strong>学习率（Learning Rate）</strong></li>
+        </ul>
+
+        <div
+          class="bg-surface p-8 rounded-xl w-full border border-primary/50 text-center shadow-[0_0_20px_rgba(62,207,142,0.1)]"
+        >
+          <h3 class="text-[2.8rem] font-bold text-primary mb-6 mt-0">
+            训练流程
+          </h3>
+          <p class="text-[2.6rem] leading-[1.5] text-white font-mono">
+            输入数据 → 计算预测 → 计算损失 → 计算梯度 → 更新参数
+          </p>
+        </div>
+        <p
+          class="text-[2.2rem] leading-[1.5] text-muted max-w-full text-center mt-8"
+        >
+          每完成一轮循环参数就更接近一点，经过多轮迭代模型逐渐收敛到最优解。
+        </p>
+      </div>
+
+      <!-- Slide 11: 多特征线性回归 (表格) -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          多特征线性回归
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          房价真的只由面积决定吗？影响房价的因素还包括：<strong>楼层、距地铁距离、房龄</strong>等。
+        </p>
+        <div class="w-full flex justify-center mb-8">
+          <table class="text-[2rem] w-full text-center border-collapse">
+            <thead>
+              <tr class="border-b-2 border-primary text-text">
+                <th class="p-2">面积（㎡）</th>
+                <th class="p-2">楼层</th>
+                <th class="p-2">距地铁（km）</th>
+                <th class="p-2">房龄（年）</th>
+                <th class="p-2 text-primary">总价（万元）</th>
+              </tr>
+            </thead>
+            <tbody class="text-[#D4D4D4]">
+              <tr class="border-b border-gray-700">
+                <td class="p-2">50</td>
+                <td class="p-2">3</td>
+                <td class="p-2">0.5</td>
+                <td class="p-2">5</td>
+                <td class="p-2 text-white font-bold">180</td>
+              </tr>
+              <tr class="border-b border-gray-700">
+                <td class="p-2">70</td>
+                <td class="p-2">15</td>
+                <td class="p-2">1.2</td>
+                <td class="p-2">10</td>
+                <td class="p-2 text-white font-bold">210</td>
+              </tr>
+              <tr class="border-b border-gray-700">
+                <td class="p-2">90</td>
+                <td class="p-2">8</td>
+                <td class="p-2">0.3</td>
+                <td class="p-2">2</td>
+                <td class="p-2 text-white font-bold">320</td>
+              </tr>
+              <tr class="border-b border-gray-700">
+                <td class="p-2">110</td>
+                <td class="p-2">20</td>
+                <td class="p-2">2.0</td>
+                <td class="p-2">15</td>
+                <td class="p-2 text-white font-bold">280</td>
+              </tr>
+              <tr class="border-b border-gray-700">
+                <td class="p-2">130</td>
+                <td class="p-2">12</td>
+                <td class="p-2">0.8</td>
+                <td class="p-2">8</td>
+                <td class="p-2 text-white font-bold">380</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <blockquote
+          class="border-l-[8px] border-primary p-[1.5rem_2rem] not-italic text-text text-[2rem] font-semibold bg-surface rounded-lg w-full shadow-md block"
+        >
+          可以看到，面积大的不一定最贵（110㎡ 反而比 90㎡
+          便宜），因为距地铁更远、房龄更长拉低了价格。单靠面积一个特征，根本无法解释这种差异。
+        </blockquote>
+      </div>
+
+      <!-- Slide 11.5: 从一个 x 到多个 x -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          从一个 $x$ 到多个 $x$
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 max-w-full text-left"
+        >
+          现在有 $d$ 个特征，模型自然地扩展为：
+        </p>
+        <div
+          class="text-[2.4rem] text-center w-full mb-4 bg-surface rounded-xl border border-gray-800"
+        >
+          $$ \hat{y} = w_1 x_1 + w_2 x_2 + w_3 x_3 + \cdots + w_d x_d + b $$
+        </div>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 max-w-full text-left"
+        >
+        </p>
+        <div class="text-[2.4rem] text-center w-full mb-8">
+          $$ \hat{y} = w_1 \cdot x_{\text{面积}} + w_2 \cdot x_{\text{楼层}} +
+          w_3 \cdot x_{\text{距地铁}} + w_4 \cdot x_{\text{房龄}} + b $$
+        </div>
+        <ul
+          class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-0 max-w-full list-disc list-inside text-left space-y-2"
+        >
+          <li>$ w_1 $（面积）：➕ 正，面积越大，房价越高</li>
+          <li>$ w_2 $（楼层）：➕ 正，中高楼层通常更贵</li>
+          <li>$ w_3 $（距地铁）：➖ 负，离地铁越远，房价越低</li>
+          <li>$ w_4 $（房龄）：➖ 负，房子越老，房价越低</li>
+        </ul>
+      </div>
+
+      <!-- Slide 11.7: 代码实现 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          代码实现
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 max-w-full text-left"
+        >
+          使用 Python 的 <strong>scikit-learn</strong> 库可以非常方便地完成多特征线性回归的训练和预测：
+        </p>
+        <div class="w-full overflow-hidden text-[1.8rem]">
+          <div class="flex-1 overflow-y-auto custom-scrollbar" style="max-height: 70vh;">
+<pre class="!my-0 !text-[1.8rem] !bg-[#1E1E1E] !rounded-xl"><code class="language-python">import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# 1. 准备数据：4 个特征（面积、楼层、距地铁、房龄）
+X = np.array([
+    [50,   3, 0.5,  5],
+    [70,  15, 1.2, 10],
+    [90,   8, 0.3,  2],
+    [110, 20, 2.0, 15],
+    [130, 12, 0.8,  8],
+])
+y = np.array([180, 210, 320, 280, 380])  # 总价（万元）
+
+# 2. 训练模型
+model = LinearRegression()
+model.fit(X, y)
+
+# 3. 查看学到的权重
+feature_names = ['面积', '楼层', '距地铁', '房龄']
+print("各特征权重：")
+for name, w in zip(feature_names, model.coef_):
+    print(f"  {name}: {w:+.2f}")
+print(f"  偏置 b: {model.intercept_:.2f}")
+
+# 4. 预测新数据：100㎡、10楼、距地铁0.6km、房龄5年
+new_house = np.array([[100, 10, 0.6, 5]])
+pred = model.predict(new_house)
+print(f"\n预测房价：{pred[0]:.1f} 万元")</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 11.8: 代码验证与预测 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          代码验证与预测
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          通过代码训练模型后，我们得到了各个特征的权重：
+        </p>
+
+        <div class="grid grid-cols-2 gap-8 w-full mb-8">
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 font-mono text-[2.2rem] text-[#D4D4D4]"
+          >
+            <div class="text-primary mb-4 font-bold">各特征权重：</div>
+            <div>面积: <span class="text-green-400">+2.42</span></div>
+            <div>楼层: <span class="text-green-400">+1.30</span></div>
+            <div>距地铁: <span class="text-red-400">-38.07</span></div>
+            <div>房龄: <span class="text-red-400">-4.28</span></div>
+            <div class="mt-4 text-muted">偏置 b: 49.53</div>
+          </div>
+          <div
+            class="bg-surface p-6 rounded-xl border border-primary/50 flex flex-col justify-center"
+          >
+            <div class="text-[2.2rem] text-muted mb-4">
+              预测：100㎡、10楼、距地铁0.6km、房龄5年
+            </div>
+            <div class="text-[3.5rem] font-bold text-white">
+              预测房价：<span class="text-primary">289.0 万元</span>
+            </div>
+            <div class="text-[2rem] text-muted mt-4 line-through">
+              仅用面积预测：约 230 万元
+            </div>
+          </div>
+        </div>
+
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.4rem] font-semibold bg-surface rounded-lg w-full shadow-md block"
+        >
+          从权重可以看出：<strong>距地铁每远 1km，房价大约下降 38 万</strong
+          >。多了距地铁、楼层、房龄的信息后，预测结果明显更合理！
+        </blockquote>
+      </div>
+
+      <!-- Slide 12: 向量表达 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="11"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          用向量简化表达
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          当特征很多时，把公式全部展开写会非常冗长。借助<strong>向量</strong>的记号，可以将其写得更简洁：
+        </p>
+
+        <div class="grid grid-cols-2 gap-8 w-full mb-10 items-center">
+          <div class="flex flex-col items-center justify-center">
+            <div class="text-[4rem] font-bold text-white bg-surface py-6 px-12 rounded-2xl border border-gray-700 w-full text-center">
+              $$ \hat{y} = \boldsymbol{w}^\top \boldsymbol{x} + b $$
+            </div>
+          </div>
+          <div class="bg-surface p-8 rounded-xl border border-gray-800 flex flex-col justify-center">
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 text-left">其中：</p>
+            <div class="text-[2rem] text-center w-full">
+              $$ \boldsymbol{x} = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_d \end{bmatrix}, \quad \boldsymbol{w} = \begin{bmatrix} w_1 \\ w_2 \\ \vdots \\ w_d \end{bmatrix} $$
+            </div>
+          </div>
+        </div>
+
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.2rem] font-semibold bg-surface rounded-lg w-full shadow-md block"
+        >
+          不管是 1 个特征还是 100
+          个特征，模型的本质结构完全一样——都是特征的加权求和再加偏置。
+        </blockquote>
+      </div>
+
+      <!-- Slide 13: 多项式回归 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="12"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          多项式回归：当直线不够用时
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          现实中的数据并不总是沿着一条直线分布。比如当房价随面积的增长先慢后快时，直线就无法很好地拟合了。这时可以引入多项式回归：
+        </p>
+
+        <div class="text-[2.4rem] text-center w-full">
+          $$ \hat y = w_1x + w_2x^2 + \cdots + w_dx^d + b $$
+        </div>
+
+        <ul
+          class="text-[2.4rem] leading-[1.2] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left space-y-4"
+        >
+          <li>当 $d=1$ 时，就是普通的线性回归。</li>
+          <li>当 $d=2$ 时，拟合出的是一条抛物线；阶数越高，曲线就越灵活。</li>
+        </ul>
+
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.1rem] font-semibold bg-surface rounded-lg w-full shadow-md block"
+        >
+          尽管公式中出现了 $x^2$、$x^3$
+          等非线性项，但模型对参数仍然是线性的（$\hat y$ 是 $w_1, w_2, ..., w_d,
+          b$
+          的线性组合），因此<strong>多项式回归本质上仍属于广义线性模型的范畴</strong>，可以用与线性回归相同的方法来求解。
+        </blockquote>
+      </div>
+
+      <!-- Slide 14: 逻辑回归与深度学习 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="13"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          逻辑回归与深度学习
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 max-w-full text-left"
+        >
+          线性回归虽然简单，却是更复杂模型的起点，它可以自然地延伸出两个重要方向：
+        </p>
+
+        <div class="grid grid-cols-2 gap-6 w-full">
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 flex flex-col justify-center"
+          >
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-2 mt-0">
+              逻辑回归
+            </h3>
+            <p class="text-[2.2rem] text-[#D4D4D4] mb-2">
+              <strong>线性回归 + 激活函数</strong>
+            </p>
+            <p class="text-[2rem] text-muted mb-2">
+              用于解决分类问题（如判断垃圾邮件），输出概率：
+            </p>
+            <div class="text-[2.2rem] text-center w-full mt-2 flex flex-col items-center justify-center gap-1">
+              <span>$$ P(y=1 \mid x) = \sigma(wx + b) $$</span>
+              <span class="text-[1.8rem] text-gray-400">$$ = \frac{1}{1+e^{-(wx+b)}} $$</span>
+            </div>
+          </div>
+
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 flex flex-col justify-center"
+          >
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-2 mt-0">
+              深度学习
+            </h3>
+            <p class="text-[2.2rem] text-[#D4D4D4] mb-2">
+              <strong>多层逻辑回归的叠加</strong>
+            </p>
+            <p class="text-[2rem] text-muted mb-2">
+              将许多个"线性变换+激活函数"逐层堆叠构成神经网络：
+            </p>
+            <div class="text-[1.8rem] text-center w-full my-4">
+              $$ \text{输入} \xrightarrow{\text{线性+激活}} \text{隐藏层}_1 \xrightarrow{\text{线性+激活}} \text{隐藏层}_2 \rightarrow \cdots \rightarrow \text{输出} $$
+            </div>
+            <p class="text-[2rem] text-[#D4D4D4] mt-2 border-t border-gray-700 pt-4">
+              <strong>核心思想：</strong>模型<strong class="text-primary">自动学习</strong>并提取抽象特征。
+            </p>
+          </div>
+        </div>
+
+        <blockquote
+          class="border-l-[8px] border-primary p-[1.5rem_2rem] not-italic text-text text-[2.2rem] font-semibold mt-6 bg-surface rounded-lg w-full shadow-md block text-center"
+        >
+          深度学习并不是凭空出现的新事物，而是线性回归思想的逐步演化与层层叠加。
+        </blockquote>
+      </div>
+
+      <!-- Slide 15: 总结 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="14"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          总结
+        </h2>
+        
+        <div class="flex-1 w-full flex flex-col justify-center items-center min-h-0 pb-8">
+          <p
+            class="text-[2.6rem] leading-[1.5] text-[#D4D4D4] mb-10 max-w-[80%] text-center"
+          >
+            线性回归虽然简单，但包含了机器学习的核心思想：
+          </p>
+
+          <div
+            class="bg-surface p-10 rounded-2xl border border-gray-700 shadow-2xl inline-block text-left mb-10 w-[80%]"
+          >
+            <ul
+              class="text-[2.6rem] leading-[1.8] text-text mb-0 max-w-full list-none grid grid-cols-2 gap-x-12 gap-y-6"
+            >
+              <li class="flex items-center gap-4">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary text-[2rem] font-bold">1</span> 用数据寻找规律
+              </li>
+              <li class="flex items-center gap-4">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary text-[2rem] font-bold">2</span> 用模型表达规律
+              </li>
+              <li class="flex items-center gap-4">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary text-[2rem] font-bold">3</span> 用损失函数衡量误差
+              </li>
+              <li class="flex items-center gap-4">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary text-[2rem] font-bold">4</span> 用梯度下降优化参数
+              </li>
+              <li class="flex items-center gap-4 col-span-2 justify-center mt-4">
+                <span class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 text-primary text-[2rem] font-bold">5</span> 不断训练让模型变得更准确
+              </li>
+            </ul>
+          </div>
+
+          <p
+            class="text-[2.2rem] leading-[1.5] text-muted max-w-[80%] text-center mb-8"
+          >
+            几乎所有的机器学习和深度学习模型，都可以看作是对上述基本范式的扩展和升级。
+          </p>
+
+          <div class="border-t border-gray-800 pt-6 w-[60%]">
+            <p class="text-[2.4rem] text-primary font-bold flex items-center justify-center gap-4 m-0">
+              <span>🚀</span> 下一课预告：深入理解梯度下降
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Progress Bar -->
+    <div class="fixed bottom-0 left-0 w-full h-2 bg-gray-800 z-50">
+      <div
+        id="progress-bar"
+        class="h-full bg-primary transition-all duration-300"
+        style="width: 0%"
+      ></div>
+    </div>
+
+    <!-- Page Number -->
+    <div
+      id="page-number"
+      class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80"
+    >
+      1 / 1
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide-content');
+        const progressBar = document.getElementById('progress-bar');
+        const pageNumber = document.getElementById('page-number');
+        let currentIndex = 0;
+
+        function updateSlide(index) {
+          if (index < 0) index = 0;
+          if (index >= slides.length) index = slides.length - 1;
+
+          currentIndex = index;
+
+          // Update visibility
+          slides.forEach((slide, i) => {
+            if (i === currentIndex) {
+              slide.classList.add('active');
+            } else {
+              slide.classList.remove('active');
+            }
+          });
+
+          // Update progress bar
+          const progress = ((currentIndex + 1) / slides.length) * 100;
+          progressBar.style.width = `${progress}%`;
+
+          // Update page number
+          pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+
+          // Update URL hash
+          window.location.hash = `#${currentIndex + 1}`;
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+            updateSlide(currentIndex + 1);
+          } else if (e.key === 'ArrowLeft') {
+            updateSlide(currentIndex - 1);
+          }
+        });
+
+        // Initialize from URL hash
+        const hash = window.location.hash;
+        let initialIndex = 0;
+        if (hash) {
+          const page = parseInt(hash.substring(1), 10);
+          if (!isNaN(page)) {
+            initialIndex = page - 1;
+          }
+        }
+        updateSlide(initialIndex);
+
+        // Handle hash change (e.g. browser back button)
+        window.addEventListener('hashchange', () => {
+          const hash = window.location.hash;
+          if (hash) {
+            const page = parseInt(hash.substring(1), 10);
+            if (!isNaN(page)) {
+              updateSlide(page - 1);
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
