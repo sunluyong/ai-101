@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数据预处理 Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#3ECF8E', // Supabase Green
+              bg: '#121212', // Supabase Dark BG
+              surface: '#1C1C1C', // Darker Surface
+              text: '#EDEDED', // Off-white text
+              muted: '#A1A1A1', // Muted text
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- MathJax Configuration -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ['$', '$'],
+            ['\\(', '\\)'],
+          ],
+          displayMath: [
+            ['$$', '$$'],
+            ['\\[', '\\]'],
+          ],
+          processEscapes: true,
+        },
+        svg: {
+          fontCache: 'global',
+        },
+      };
+    </script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+
+    <!-- Prism.js for syntax highlighting -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-latex.min.js"></script>
+
+    <style>
+      /* Custom scrollbar hide */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #121212;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #3ecf8e;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #2ea06b;
+      }
+
+      body {
+        background-color: #121212;
+        color: #ededed;
+        overflow: hidden;
+        font-size: 2.4em;
+      }
+
+      /* Slide Transition Logic */
+      .slide-content {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        pointer-events: none;
+      }
+
+      .slide-content.active {
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 10;
+      }
+
+      /* Strong Highlight */
+      strong {
+        color: #3ecf8e;
+        font-weight: 700;
+      }
+
+      /* Code Block Scrolling */
+      pre[class*='language-'] {
+        max-height: 50vh;
+        overflow-y: auto;
+        font-size: 1.5rem !important;
+        border-radius: 0.5rem;
+        margin: 0 !important;
+      }
+      code[class*='language-'] {
+        font-size: 1.5rem !important;
+      }
+
+      /* Image Viewer */
+      img {
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      img:hover {
+        transform: scale(1.02);
+      }
+      #image-viewer {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      #image-viewer.active {
+        display: flex;
+        opacity: 1;
+      }
+      #image-viewer img {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+        cursor: zoom-out;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+      }
+      #image-viewer.active img {
+        transform: scale(1);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black"
+  >
+    <!-- Slides Container -->
+    <main id="slides-container" class="w-full h-full relative">
+      <!-- Slide 1: Cover -->
+      <div
+        class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]"
+        data-index="0"
+      >
+        <div
+          class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted"
+        >
+          <span class="text-primary font-bold">人工智能通识</span>
+          <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+          <span class="text-gray-300">机器学习</span>
+        </div>
+        <div class="mb-12 relative">
+          <div
+            class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"
+          ></div>
+          <svg
+            class="w-48 h-48 text-primary relative z-10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            ></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <h1
+          class="text-[7rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]"
+        >
+          数据预处理
+        </h1>
+        <p
+          class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]"
+        >
+          Garbage In, Garbage Out
+        </p>
+      </div>
+
+      <!-- Slide 2: 为什么需要预处理？ -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="1"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          为什么需要预处理？
+        </h2>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block"
+        >
+          "Garbage In, Garbage Out."（垃圾进，垃圾出）
+        </blockquote>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          真实世界中的数据往往充满各种问题：
+        </p>
+        <ul
+          class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left space-y-6"
+        >
+          <li>存在<strong>缺失值</strong>和<strong>异常值</strong></li>
+          <li>包含文本、类别等<strong>非数值类型</strong></li>
+          <li><strong>量纲差异巨大</strong>（房价是百万级，房间数是个位数）</li>
+        </ul>
+      </div>
+
+      <!-- Slide 3: 四大常用工具 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="2"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          四大常用工具
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          在开始之前，我们先引入数据处理中的四个常用工具：
+        </p>
+        <div class="grid grid-cols-2 gap-8 w-full">
+          <div
+            class="bg-surface p-8 rounded-lg border border-gray-800 shadow-md"
+          >
+            <h4 class="text-[2.8rem] font-bold text-primary mb-4">Pandas</h4>
+            <p class="text-[2.2rem] text-muted leading-[1.5]">
+              表格数据处理的瑞士军刀，提供 DataFrame 等核心数据结构
+            </p>
+          </div>
+          <div
+            class="bg-surface p-8 rounded-lg border border-gray-800 shadow-md"
+          >
+            <h4 class="text-[2.8rem] font-bold text-primary mb-4">
+              Matplotlib
+            </h4>
+            <p class="text-[2.2rem] text-muted leading-[1.5]">
+              Python 最基础的数据可视化库
+            </p>
+          </div>
+          <div
+            class="bg-surface p-8 rounded-lg border border-gray-800 shadow-md"
+          >
+            <h4 class="text-[2.8rem] font-bold text-primary mb-4">Seaborn</h4>
+            <p class="text-[2.2rem] text-muted leading-[1.5]">
+              基于 Matplotlib 的高级可视化库，语法更简洁、图表更美观
+            </p>
+          </div>
+          <div
+            class="bg-surface p-8 rounded-lg border border-gray-800 shadow-md"
+          >
+            <h4 class="text-[2.8rem] font-bold text-primary mb-4">
+              Scikit-Learn (sklearn)
+            </h4>
+            <p class="text-[2.2rem] text-muted leading-[1.5]">
+              机器学习标准库，包含丰富的预处理工具和常用算法实现
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: 准备环境与数据 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="3"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          准备环境与数据
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          以经典的 <strong>Titanic（泰坦尼克号）</strong> 生存预测数据集为例：
+        </p>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800">
+          <pre style="max-height: 60vh;"><code class="language-python">import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 设置绘图风格
+sns.set_style("whitegrid")
+
+plt.rcParams['font.sans-serif'] = ['SimHei','Arial Unicode MS', 'DejaVu Sans'] # 用来正常显示中文标签
+plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+
+# 从网络读取泰坦尼克号数据集
+url = 'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv'
+df = pd.read_csv(url)
+
+# 查看数据概览
+print("数据集形状:", df.shape)
+print("\n数据类型与缺失值情况:")
+print(df.info())</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 5: 数据概览与缺失值分析 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="4"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据概览与缺失值分析
+        </h2>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800">
+          <pre><code class="language-plain">RangeIndex: 891 entries, 0 to 890
+Data columns (total 12 columns):
+ #   Column       Non-Null Count  Dtype  
+---  ------       --------------  -----  
+ 0   PassengerId  891 non-null    int64  
+ 1   Survived     891 non-null    int64  
+ 2   Pclass       891 non-null    int64  
+ 3   Name         891 non-null    str    
+ 4   Sex          891 non-null    str    
+ 5   Age          714 non-null    float64
+ 6   SibSp        891 non-null    int64  
+ 7   Parch        891 non-null    int64  
+ 8   Ticket       891 non-null    str    
+ 9   Fare         891 non-null    float64
+ 10  Cabin        204 non-null    str    
+ 11  Embarked     889 non-null    str    
+dtypes: float64(2), int64(5), str(5)</code></pre>
+        </div>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mt-8 max-w-full text-left"
+        >
+          观察 <code>df.info()</code> 的输出会发现 <strong><code>Age</code>（年龄）</strong>、<strong><code>Cabin</code>（客舱号）</strong>和 <strong><code>Embarked</code>（登船港口）</strong>存在缺失值，且包含文本类型的列，这正是我们需要处理的“脏数据”。
+        </p>
+      </div>
+
+      <!-- Slide 6: 数据集划分 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="5"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据集划分
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          正确的做法是<strong>先划分数据集，再做预处理</strong>。通常将数据集划分为三个部分：
+        </p>
+        <ul
+          class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left space-y-6"
+        >
+          <li><strong>训练集 (60%-80%)</strong>：训练模型，学习数据中的规律</li>
+          <li>
+            <strong>验证集 (10%-20%)</strong
+            >：调整超参数，评估模型在未见过数据上的表现
+          </li>
+          <li>
+            <strong>测试集 (10%-20%)</strong
+            >：模拟真实世界数据，最终评估模型泛化能力
+          </li>
+        </ul>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block"
+        >
+          <strong>防止数据泄露（Data Leakage）原则：</strong><br />
+          所有 <code>fit</code> 操作只在训练集上进行，测试集只做
+          <code>transform</code>。
+        </blockquote>
+      </div>
+
+      <!-- Slide 7: 数据集划分 (代码实现) -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="6"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据集划分
+        </h2>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800">
+          <pre><code class="language-python">from sklearn.model_selection import train_test_split
+
+# 定义特征 X 和目标标签 y (Survived)
+X = df.drop('Survived', axis=1)
+y = df['Survived']
+
+# 划分训练集和测试集 (80% 训练, 20% 测试)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, 
+    test_size=0.2, 
+    random_state=42,       # 固定随机种子，保证可复现
+    stratify=y             # 分层抽样，保持正负样本比例一致
+)
+
+print(f"训练集: {X_train.shape[0]} 样本")  # 712
+print(f"测试集: {X_test.shape[0]} 样本")   # 179
+print(f"\n训练集存活率: {y_train.mean():.2%}")  # ≈38.34%
+print(f"测试集存活率: {y_test.mean():.2%}")     # ≈38.55%</code></pre>
+        </div>
+        <p
+          class="text-[2.2rem] leading-[1.5] text-muted mt-6 max-w-full text-left"
+        >
+          设置 <code>stratify=y</code> 后，sklearn
+          会确保两者中正负样本比例与原始数据保持一致。接下来的所有探索和规则制定都必须只在
+          <code>X_train</code> 上进行！
+        </p>
+      </div>
+
+      <!-- Slide 8: 数据探索分析 (EDA) - 基本信息 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据探索分析 (EDA)
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          EDA（Exploratory Data Analysis）就像是给数据做一次全面体检，直观地发现数据中的问题和规律。
+        </p>
+
+        <!-- 内容区：左右结构 -->
+        <div class="flex flex-row justify-between items-stretch w-full gap-12 flex-1 pb-12">
+          <!-- 左侧：代码 -->
+          <div class="w-[45%] flex flex-col">
+            <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 flex-1 flex flex-col">
+              <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+                基本信息
+              </h3>
+              <p class="text-[2rem] leading-[1.6] text-muted mb-4">使用 <code>.info()</code> 查看数据集的数据类型和缺失情况：</p>
+              <pre class="flex-1"><code class="language-python"># 查看训练集数据类型和缺失情况
+X_train.info()</code></pre>
+            </div>
+          </div>
+
+          <!-- 右侧：输出结果 -->
+          <div class="w-[55%] bg-[#1E1E1E] p-8 rounded-lg border border-gray-800 shadow-lg flex flex-col justify-center overflow-hidden">
+            <pre class="!m-0 !p-0 !bg-transparent !border-none h-full flex flex-col justify-center !max-h-none !overflow-hidden"><code class="language-plaintext text-[1.45rem] text-[#D4D4D4] leading-[1.6]">Column       Non-Null Count  Dtype  
+─────────    ──────────────  ─────  
+PassengerId  712 non-null    int64  
+Pclass       712 non-null    int64  
+Name         712 non-null    object   ← 文本
+Sex          712 non-null    object   ← 文本
+Age          569 non-null    float64  ← 有缺失！
+SibSp        712 non-null    int64  
+Parch        712 non-null    int64  
+Ticket       712 non-null    object   ← 文本
+Fare         712 non-null    float64
+Cabin        161 non-null    object   ← 大量缺失！
+Embarked     710 non-null    object   ← 少量缺失</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 9: 数据探索分析 (EDA) - 缺失值统计 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          EDA - 缺失值统计
+        </h2>
+        <div class="w-full bg-surface p-4 rounded-lg border border-gray-800">
+          <div class="flex gap-3">
+            <div class="w-1/2">
+              <pre><code class="language-python"># 缺失值统计
+missing = X_train.isnull().sum()
+missing_pct = (missing / len(X_train) * 100).round(1)
+pd.DataFrame({
+    "缺失数": missing, 
+    "缺失率%": missing_pct
+}).query("缺失数 > 0")</code></pre>
+              <div class="bg-[#1E1E1E] p-4 rounded-md mt-4">
+                <pre><code class="language-plaintext text-[1.8rem] text-[#D4D4D4]">          缺失数  缺失率%
+Age        143    20.1
+Cabin      551    77.4
+Embarked     2     0.3</code></pre>
+              </div>
+            </div>
+            <div class="w-1/2 flex flex-col justify-center">
+              <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] list-disc list-inside space-y-6">
+                <li><strong class="text-primary">Cabin</strong> 缺失 77.4% —— 缺失极多，信息量匮乏</li>
+                <li><strong class="text-primary">Age</strong> 缺失 20.1% —— 有明显缺失，需要填充</li>
+                <li><strong class="text-primary">Embarked</strong> 缺失 0.3% —— 仅 2 条记录缺失</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 10: 数据探索分析 (EDA) - 数值特征统计 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          EDA - 数值特征统计
+        </h2>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800">
+          <pre><code class="language-python">X_train.describe()</code></pre>
+          <div class="bg-[#1E1E1E] p-4 rounded-md mt-4 overflow-x-auto">
+            <pre><code class="language-plaintext text-[1.8rem] text-[#D4D4D4]">       PassengerId  Pclass     Age   SibSp   Parch     Fare
+count       712.0   712.0   569.0   712.0   712.0    712.0
+mean        448.7     2.3    29.5     0.5     0.4     33.3
+std         258.6     0.8    14.6     1.1     0.8     52.4
+min           1.0     1.0     0.4     0.0     0.0      0.0
+25%         222.5     2.0    20.0     0.0     0.0      8.0
+50%         445.0     3.0    28.0     0.0     0.0     15.7
+75%         668.5     3.0    38.0     1.0     0.0     33.4
+max         891.0     3.0    80.0     8.0     6.0    512.3</code></pre>
+          </div>
+          <blockquote class="border-l-[8px] border-primary p-[1.5rem_2rem] not-italic text-text text-[2.2rem] font-semibold mt-8 bg-[#2A2A2A] rounded-lg w-full shadow-md block">
+            注意 <strong class="text-primary">Fare</strong> 最大 512，最小 0，量纲差异巨大，后面需要缩放。
+          </blockquote>
+        </div>
+      </div>
+
+      <!-- Slide 11: 数据探索分析 (EDA) - 数据可视化代码 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          EDA - 数据可视化
+        </h2>
+        <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4">
+          使用 Matplotlib 和 Seaborn 对数据进行可视化，看出更多端倪：
+        </p>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 flex-1 mb-8 overflow-hidden">
+          <pre class="!max-h-none h-full !m-0"><code class="language-python text-[1.6rem]">fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+
+# 1. 存活率分布
+y_train.value_counts().plot.bar(ax=axes[0,0], color=['#e74c3c','#2ecc71'])
+axes[0,0].set_title('存活率分布')
+
+# 2. 年龄分布
+X_train['Age'].hist(bins=30, ax=axes[0,1], color='steelblue', edgecolor='black')
+axes[0,1].set_title('年龄分布')
+
+# 3. 票价分布
+X_train['Fare'].hist(bins=30, ax=axes[0,2], color='coral', edgecolor='black')
+axes[0,2].set_title('票价分布')
+
+# 4. 性别 vs 存活
+train_data = X_train.copy()
+train_data['Survived'] = y_train
+sns.barplot(x='Sex', y='Survived', data=train_data, ax=axes[1,0])
+axes[1,0].set_title('性别 vs 存活')
+
+# 5. 船票等级 vs 存活
+sns.barplot(x='Pclass', y='Survived', data=train_data, ax=axes[1,1])
+axes[1,1].set_title('船票等级 vs 存活')
+
+# 6. 相关性热力图
+numeric_cols = train_data[['Survived','Pclass','Age','SibSp','Parch','Fare']]
+sns.heatmap(numeric_cols.corr(), annot=True, cmap='RdBu_r', center=0, ax=axes[1,2])
+axes[1,2].set_title('相关性热力图')
+
+plt.tight_layout()
+plt.show()</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 12: 数据探索分析 (EDA) - 数据可视化图表 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2] shrink-0"
+        >
+          EDA - 可视化结果
+        </h2>
+        <div class="w-full flex-1 flex justify-center items-center bg-surface rounded-lg border border-gray-800 p-4 mb-4 overflow-hidden min-h-0">
+          <img src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774105083423-731b6509-b2f4-4395-b168-9feb8997328e.png" alt="EDA 可视化图表" class="h-full w-full object-contain rounded" />
+        </div>
+      </div>
+
+      <!-- Slide 13: 数据探索分析 (EDA) - 关键发现 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          EDA 关键发现
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          通过以上可视化，我们得出六条关键发现，它们将直接指导后续的预处理策略：
+        </p>
+        <div
+          class="w-full bg-surface rounded-lg border border-gray-800 overflow-hidden"
+        >
+          <table class="w-full text-left text-[2.2rem]">
+            <thead class="bg-gray-800/50 text-primary">
+              <tr>
+                <th class="p-4 border-b border-gray-800 w-1/2">发现</th>
+                <th class="p-4 border-b border-gray-800 w-1/2">对应处理</th>
+              </tr>
+            </thead>
+            <tbody class="text-muted">
+              <tr>
+                <td class="p-4 border-b border-gray-800/50">
+                  女性存活率远高于男性（~74% vs ~19%）
+                </td>
+                <td class="p-4 border-b border-gray-800/50">
+                  <strong class="text-primary">Sex</strong> 是强特征，需编码为数值
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 border-b border-gray-800/50">
+                  一等舱存活率最高（~63%）
+                </td>
+                <td class="p-4 border-b border-gray-800/50">
+                  <strong class="text-primary">Pclass</strong> 是强特征，考虑保留或独热编码
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 border-b border-gray-800/50">
+                  <strong class="text-primary">Age</strong> 缺失约 20%
+                </td>
+                <td class="p-4 border-b border-gray-800/50">
+                  需要填充，分布略偏态，选用中位数
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 border-b border-gray-800/50">
+                  <strong class="text-primary">Cabin</strong> 缺失 77%
+                </td>
+                <td class="p-4 border-b border-gray-800/50">
+                  直接填充意义不大，考虑转化为"有/无客舱信息"
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 border-b border-gray-800/50">
+                  <strong class="text-primary">Fare</strong> 严重右偏（均值 > 中位数，长尾分布）
+                </td>
+                <td class="p-4 border-b border-gray-800/50">
+                  可能需要对数变换或截断处理
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4">
+                  PassengerId、Name、Ticket 对预测无直接帮助
+                </td>
+                <td class="p-4">
+                  考虑删除，或从 Name 中提取有用信息
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Slide: 数据清洗 - 概览与处理重复值 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据清洗 - 处理重复值
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          数据清洗的核心环节通常涵盖重复值剔除、缺失值填补以及异常值检测与处理。
+        </p>
+
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 mb-8">
+          <p class="text-[2.2rem] leading-[1.6] text-muted mb-4">对于数据中重复的行直接删除即可：</p>
+          <pre><code class="language-python"># 检查重复行
+duplicates = X_train.duplicated().sum()
+print(f"重复行数: {duplicates}")
+
+# 如果有重复行
+if duplicates > 0:
+    X_train = X_train.drop_duplicates()
+    y_train = y_train[X_train.index]  # 保持 y 与 X 同步</code></pre>
+          <blockquote class="border-l-[8px] border-primary p-[1.5rem_2rem] not-italic text-text text-[1.7rem] font-semibold mt-6 bg-[#2A2A2A] rounded-lg w-full shadow-md block">
+            注意：<code>X_train</code> 和 <code>y_train</code> 是靠索引（Index）对齐的，当你从 <code>X_train</code> 删除了某一行，<code>y_train</code> 也要删除对应的行。
+          </blockquote>
+        </div>
+      </div>
+
+      <!-- Slide: 数据清洗 - 处理缺失值策略 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据清洗 - 处理缺失值
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          当数据集中出现缺失值时，处理策略需根据缺失比例及特征类型灵活选择：
+        </p>
+        
+        <div class="flex gap-8 w-full h-[65%]">
+          <div class="w-1/2 bg-surface p-6 rounded-lg border border-gray-800 flex flex-col">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+              按缺失比例决定
+            </h3>
+            <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] list-disc list-inside space-y-6 flex-1">
+              <li>
+                <strong class="text-white">缺失极低（< 5%）</strong><br>
+                <span class="text-muted ml-8 block mt-2">且为随机缺失 → 直接删除对应样本行</span>
+              </li>
+              <li>
+                <strong class="text-white">缺失极高（> 70%）</strong><br>
+                <span class="text-muted ml-8 block mt-2">该特征信息量匮乏，通常直接删除整列</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="w-1/2 bg-surface p-6 rounded-lg border border-gray-800 flex flex-col">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+              按特征类型选择
+            </h3>
+            <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] list-disc list-inside space-y-6 flex-1">
+              <li>
+                <strong class="text-white">数值型特征</strong><br>
+                <span class="text-muted ml-8 block mt-2">用均值或中位数填充。中位数对极端值不敏感，在数据偏态时更加稳健。</span>
+              </li>
+              <li>
+                <strong class="text-white">类别型特征</strong><br>
+                <span class="text-muted ml-8 block mt-2">用众数填充，或新增 <code>"Unknown"</code> 类别保留业务信息。</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide: 数据清洗 - 处理缺失值代码 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据清洗 - 处理缺失值
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 max-w-full text-left"
+        >
+          使用 <code>sklearn.impute.SimpleImputer</code> 处理缺失值：
+        </p>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 flex-1 mb-8 overflow-hidden">
+          <pre class="!max-h-none h-full !m-0"><code class="language-python text-[1.6rem]">from sklearn.impute import SimpleImputer
+
+# ── Age: 中位数填充（因为 Age 分布略有偏态）──
+age_imputer = SimpleImputer(strategy='median')
+age_imputer.fit(X_train[['Age']]) # fit 只用训练集！
+X_train['Age'] = age_imputer.transform(X_train[['Age']]).ravel()
+X_test['Age']  = age_imputer.transform(X_test[['Age']]).ravel()  # 用训练集的中位数！
+
+# ── Embarked: 众数填充（只缺 2 个）──
+embarked_imputer = SimpleImputer(strategy='most_frequent')
+embarked_imputer.fit(X_train[['Embarked']])
+X_train['Embarked'] = embarked_imputer.transform(X_train[['Embarked']]).ravel()
+X_test['Embarked']  = embarked_imputer.transform(X_test[['Embarked']]).ravel()
+
+# ── Cabin: 缺失 77%，先转化为"有无客舱信息"，再删除原列 ──
+X_train['HasCabin'] = X_train['Cabin'].notna().astype(int)
+X_test['HasCabin']  = X_test['Cabin'].notna().astype(int)
+X_train.drop(columns=['Cabin'], inplace=True)
+X_test.drop(columns=['Cabin'], inplace=True)</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide: 数据清洗 - 异常值检测 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据清洗 - 异常值检测
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          异常值（Outliers）是指显著偏离其他观测值的极端值。可以使用箱线图检测：
+        </p>
+        <div class="w-full flex gap-8 h-[45%] mb-6">
+          <div class="w-[55%] bg-surface p-6 rounded-lg border border-gray-800 flex flex-col justify-center">
+            <pre class="!m-0"><code class="language-python text-[1.4rem]">fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+
+for i, col in enumerate(['Age', 'Fare', 'SibSp']):
+    X_train.boxplot(column=col, ax=axes[i])
+    axes[i].set_title(f'{col} Boxplot')
+
+plt.tight_layout()
+plt.show()</code></pre>
+          </div>
+          <div class="w-[45%] flex justify-center items-center bg-surface rounded-lg border border-gray-800 p-4 overflow-hidden">
+            <img src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774111171864-2e70b0ad-dead-46c6-86bc-560c70b2954a.png" alt="Boxplot" class="w-full object-contain rounded" />
+          </div>
+        </div>
+        <div class="w-full bg-[#1E1E1E] p-4 rounded-lg border border-gray-800 flex-1 mb-8 overflow-y-auto">
+          <ul class="text-[1.8rem] leading-[1.4] text-[#D4D4D4] list-disc list-inside space-y-4">
+            <li><strong class="text-primary">Age (年龄)</strong>: 集中在 20-40 岁，60-80 岁有离群点（高龄乘客，真实存在）。</li>
+            <li><strong class="text-primary">Fare (票价)</strong>: 极度右偏。绝大多数票价极低，极少数超过 500 美元。不处理会让模型过度关注高价票。</li>
+            <li><strong class="text-primary">SibSp (亲属数)</strong>: 大部分是 0 或 1，少数大家庭（3-8个亲属）也是真实的异常值。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide: 数据清洗 - 处理异常值 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          数据清洗 - 处理异常值
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          使用统计学方法（IQR）识别并处理票价（Fare）中的极端异常值。采用<strong>截断策略</strong>，将过高的票价强行拉回到合理范围内。
+        </p>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 flex-1 mb-8 overflow-hidden">
+          <pre class="!max-h-none h-full !m-0"><code class="language-python text-[1.6rem]"># 用 IQR 方法检测
+def detect_outliers_iqr(data, column, factor=1.5):
+    Q1 = data[column].quantile(0.25)
+    Q3 = data[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower = max(0, Q1 - factor * IQR)
+    upper = Q3 + factor * IQR
+    outliers = data[(data[column] < lower) | (data[column] > upper)]
+    print(f"{column}: Q1={Q1:.1f}, Q3={Q3:.1f}, IQR={IQR:.1f}")
+    print(f"  合理范围: [{lower:.1f}, {upper:.1f}]")
+    print(f"  异常值数量: {len(outliers)} ({len(outliers)/len(data):.1%})")
+    return lower, upper
+
+lower, upper = detect_outliers_iqr(X_train, 'Fare')
+
+# 对于 Fare，我们选择截断而非删除
+# 因为高票价可能是真实的，头等舱确实很贵
+X_train['Fare'] = X_train['Fare'].clip(lower=lower, upper=upper)
+X_test['Fare']  = X_test['Fare'].clip(lower=lower, upper=upper)</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 12: 特征编码简介 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+          四、特征编码
+        </h2>
+        <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+          <strong>目的：</strong>将文本映射为数值，使模型能进行数学运算。<br>
+          <strong>核心区别：</strong>是否保留顺序、是否引入数值大小。
+        </p>
+        <div class="flex gap-6 w-full mb-8">
+          <div class="flex-1 bg-surface p-6 rounded-lg border border-gray-800 text-center">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-2 mt-0">序数编码</h3>
+            <p class="text-[2rem] text-muted">保留严格顺序</p>
+          </div>
+          <div class="flex-1 bg-surface p-6 rounded-lg border border-gray-800 text-center">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-2 mt-0">独热编码</h3>
+            <p class="text-[2rem] text-muted">无大小顺序之分</p>
+          </div>
+          <div class="flex-1 bg-surface p-6 rounded-lg border border-gray-800 text-center">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-2 mt-0">标签编码</h3>
+            <p class="text-[2rem] text-muted">引入数值大小(不保证顺序)</p>
+          </div>
+        </div>
+        <div class="bg-surface p-6 rounded-lg border border-gray-800 w-full">
+          <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">原始数据示例</h3>
+          <pre><code class="language-plain">   survived     sex  pclass  embark_town
+0         0    male       3  Southampton
+1         1  female       1    Cherbourg</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 13: 序数编码 Ordinal Encoding -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+          序数编码 Ordinal Encoding
+        </h2>
+        <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left">
+          将类别映射为整数，<strong>严格保留顺序关系</strong>（如：低=0, 中=1, 高=2）。<br>
+          <strong>适用场景：</strong>特征本身具有明确等级（如学历、满意度、舱位）。
+        </p>
+        <div class="flex flex-col gap-6 w-full">
+          <div class="bg-surface p-6 rounded-lg border border-gray-800">
+            <pre><code class="language-python text-[1.8rem]">from sklearn.preprocessing import OrdinalEncoder
+
+# 构造模拟数据: ['Low', 'Mid', 'High']
+oe = OrdinalEncoder(categories=[['Low', 'Mid', 'High']]) # 显式指定顺序
+df_ordinal['fare_cat_encoded'] = oe.fit_transform(df_ordinal[['fare_category']])</code></pre>
+          </div>
+          <div class="bg-surface p-6 rounded-lg border border-gray-800">
+            <pre><code class="language-plain text-[1.8rem]">顺序定义: Low < Mid < High -> 0, 1, 2
+  fare_category  fare_cat_encoded
+0           Low               0.0
+1           Low               0.0</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 14: 独热编码 One-Hot Encoding -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+          独热编码 One-Hot Encoding
+        </h2>
+        <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left">
+          <strong>核心思想：</strong>把每个类别变成独立列，用 0 和 1 表示，<strong>消除虚假的大小关系</strong>。<br>
+          <strong>适用场景：</strong>无序分类特征（如颜色、城市）。
+        </p>
+        
+        <div class="flex gap-8 w-full">
+          <div class="flex-1 bg-surface p-6 rounded-lg border border-gray-800">
+            <h3 class="text-[2.5rem] font-semibold text-red-400 mb-4 mt-0">❌ 错误的序数编码</h3>
+            <table class="w-full text-[2rem] text-left text-[#D4D4D4]">
+              <thead><tr class="border-b border-gray-700"><th class="pb-2">样本</th><th class="pb-2">颜色</th><th class="pb-2">编码</th></tr></thead>
+              <tbody>
+                <tr class="border-b border-gray-800"><td class="py-2">A</td><td>🔴 红</td><td>1</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2">B</td><td>🟢 绿</td><td>2</td></tr>
+                <tr><td class="py-2">C</td><td>🔵 蓝</td><td>3</td></tr>
+              </tbody>
+            </table>
+            <p class="text-[1.8rem] text-muted mt-4">模型会误以为：蓝 = 红 × 3</p>
+          </div>
+          <div class="flex-1 bg-surface p-6 rounded-lg border border-gray-800">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">✅ 独热编码转换</h3>
+            <table class="w-full text-[2rem] text-left text-[#D4D4D4]">
+              <thead><tr class="border-b border-gray-700"><th class="pb-2">样本</th><th class="pb-2">是红</th><th class="pb-2">是绿</th><th class="pb-2">是蓝</th></tr></thead>
+              <tbody>
+                <tr class="border-b border-gray-800"><td class="py-2">A</td><td>1</td><td>0</td><td>0</td></tr>
+                <tr class="border-b border-gray-800"><td class="py-2">B</td><td>0</td><td>1</td><td>0</td></tr>
+                <tr><td class="py-2">C</td><td>0</td><td>0</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 15: 独热编码 - 代码演示 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+          独热编码 - 代码演示
+        </h2>
+        <div class="flex flex-col gap-4 w-full">
+          <div class="bg-surface p-3 rounded-lg border border-gray-800">
+            <pre><code class="language-python text-[1.8rem]">from sklearn.preprocessing import OneHotEncoder
+
+ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+ohe_result = ohe.fit_transform(df_ohe[['embark_town']]) # 输入必须是二维数组
+
+# 转换为 DataFrame 并与主表拼接
+ohe_columns = ohe.get_feature_names_out(['embark_town'])
+ohe_df = pd.DataFrame(ohe_result, columns=ohe_columns, index=df_ohe.index)</code></pre>
+          </div>
+          <div class="bg-surface p-3 rounded-lg border border-gray-800">
+            <pre><code class="language-plain text-[1.8rem]">生成的新列: ['embark_town_Cherbourg', 'embark_town_Queenstown', 'embark_town_Southampton']
+
+   survived     sex  pclass  embark_town_Cherbourg  embark_town_Queenstown  embark_town_Southampton
+0         0    male       3                    0.0                     0.0                      1.0
+1         1  female       1                    1.0                     0.0                      0.0</code></pre>
+          </div>
+        </div>
+        <p class="text-[2rem] leading-[1.5] text-[#D4D4D4] mt-6 max-w-full text-left">
+            <strong>缺点（维度爆炸）：</strong>N 种类别会增加 N-1 列。类别极多时会导致数据稀疏，建议改用 Embedding。
+          </p>
+      </div>
+
+      <!-- Slide 16: 标签编码 Label Encoding -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+          标签编码 Label Encoding
+        </h2>
+        <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left">
+          简单映射为整数（0, 1, 2...），<strong>不保证顺序，但引入了数值大小</strong>。
+        </p>
+        <div class="flex gap-8 w-full mb-6">
+          <div class="flex-1">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">✅ 适用场景</h3>
+            <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] list-disc list-inside space-y-4">
+              <li>二分类特征（如性别，0/1等价于独热）</li>
+              <li>分类任务的目标变量/标签列</li>
+              <li>树模型（如 XGBoost、随机森林）</li>
+            </ul>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-[2.5rem] font-semibold text-red-400 mb-4 mt-0">❌ 严禁使用</h3>
+            <p class="text-[2.2rem] leading-[1.6] text-[#D4D4D4]">
+              严禁用于<strong>线性模型</strong>和<strong>多分类无序特征</strong>！此类情况必须改用独热编码或序数编码。
+            </p>
+          </div>
+        </div>
+        <div class="bg-surface p-6 rounded-lg border border-gray-800 w-full">
+          <pre><code class="language-python text-[1.8rem]">from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+X_train_encoded['Sex'] = le.fit_transform(X_train['Sex']) # 映射关系: {'female': 0, 'male': 1}</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 18: 特征构造与删除 (核心思想) -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          特征构造与删除
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          原始数据只是原材料，接下来我们将基于对泰坦尼克号背景的理解，<strong>对数据集做三个关键处理</strong>，挖掘出数据背后真正的规律：
+        </p>
+        <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-inside text-left space-y-6 list-decimal">
+          <li><strong>合并特征</strong>：将分散的亲属数量合并为“家庭规模”，并标记出“独自一人”的乘客（家庭结构可能直接影响逃生策略）。</li>
+          <li><strong>提取信息</strong>：从看似无用的姓名中提取出头衔（如 Mr, Mrs, Master），帮助识别社会地位和特殊群体。</li>
+          <li><strong>删减噪音</strong>：果断删除缺失太多、格式混乱或会导致数据泄露的列，只保留最核心的特征。</li>
+        </ul>
+        <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+          目标：去粗取精，将杂乱的原始记录转化为模型更容易理解的高质量特征。
+        </blockquote>
+      </div>
+
+      <!-- Slide 18-2: 特征构造与删除 (代码实现) -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          特征构造与删除
+        </h2>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 flex-1 mb-8 overflow-hidden">
+          <pre class="!max-h-none h-full !m-0 overflow-y-auto"><code class="language-python text-[1.8rem]">def create_features(df):
+    df = df.copy()
+
+    # 1. 家族大小
+    df['family_size'] = df['sibsp'] + df['parch'] + 1
+
+    # 2. 是否独自一人
+    df['is_alone'] = (df['family_size'] == 1).astype(int)
+
+    # 3. 从姓名提取头衔并归并稀有头衔
+    df['title'] = df['name'].str.extract(r' ([A-Za-z]+)\.', expand=False)
+    df['title'] = df['title'].replace(['Lady', 'Countess','Capt', 'Col', 'Don', 'Dr', 
+                                       'Major', 'Rev', 'Sir', 'Jonkheer', 'Dona'], 'Rare')
+    df['title'] = df['title'].replace({'Mlle': 'Miss', 'Ms': 'Miss', 'Mme': 'Mrs'})
+
+    # 4. 删除无用特征
+    drop_cols = ['name', 'ticket', 'cabin', 'deck', 'alive', 'adult_male', 'who', 'class', 'embark_town']
+    df = df.drop(columns=[c for c in drop_cols if c in df.columns])
+
+    return df
+
+X_train_fe = create_features(X_train)
+X_test_fe = create_features(X_test)</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 18-3: 特征构造与删除 (处理结果) -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          特征构造与删除
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          经过特征构造与删除后，数据集变得更加精简且富含信息量。
+        </p>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800">
+          <pre><code class="language-python">print("新增特征后形状:", X_train_fe.shape)
+print(X_train_fe[['family_size', 'is_alone', 'title']].head())</code></pre>
+        </div>
+        <div class="w-full bg-[#121212] p-6 rounded-lg border border-gray-800 mt-6">
+          <pre><code class="language-plain">新增特征后形状: (712, 11)
+
+     family_size  is_alone title
+692            1         1    Mr
+481            1         1    Mr
+527            1         1    Mr
+855            2         0   Mrs
+801            3         0   Mrs</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 19: 特征缩放 - 为什么需要 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="18"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          特征缩放：为什么需要？
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          在数据集中，部分特征的<strong>量纲差异可能极大</strong>：
+        </p>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 mb-8">
+          <pre><code class="language-plaintext">Age:        0 ~ 80      (十位数)
+Fare:       0 ~ 100+    (百位数)  
+SibSp:      0 ~ 8       (个位数)
+Embarked_C: 0 or 1      (0-1)</code></pre>
+        </div>
+        <blockquote class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.2rem] font-semibold my-6 bg-surface rounded-lg w-full shadow-md block">
+          如果不进行缩放，模型会错误地认为<strong>数值较大的特征更重要</strong>，赋予其过大的权重。<br>导致梯度下降在更新参数时反复震荡，需要极多的迭代次数才能找到最优解，甚至可能无法收敛。
+        </blockquote>
+      </div>
+
+      <!-- Slide 20: 特征缩放 - 标准化 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="19"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          特征缩放：标准化 (Standardization)
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-0 max-w-full text-left"
+        >
+          将数据转换为<strong>均值为 0、标准差为 1</strong> 的分布。最常用的方法，尤其适用于数据分布近似正态分布的场景。
+        </p>
+        
+        <div class="text-[3rem] text-center my-0 text-primary flex justify-center w-full">
+          $$ z = \frac{x - \mu}{\sigma} $$
+        </div>
+
+        <div class="grid grid-cols-2 gap-8 w-full mt-4">
+          <div class="bg-surface p-3 rounded-lg border border-gray-800">
+            <h3 class="text-[2.2rem] font-semibold text-primary mb-4 mt-0">特点与影响</h3>
+            <ul class="text-[2rem] leading-[1.4] text-[#D4D4D4] list-disc list-inside space-y-4">
+              <li>不会强制压缩到特定区间（可以是负数）。</li>
+              <li>基于均值和标准差计算，<strong>易受异常值影响</strong>。</li>
+              <li>得益于前面的异常值清洗，整体相对稳定。</li>
+            </ul>
+          </div>
+          <div class="bg-surface p-6 rounded-lg border border-gray-800">
+            <h3 class="text-[2.2rem] font-semibold text-primary mb-4 mt-0">适用场景</h3>
+            <ul class="text-[2rem] leading-[1.4] text-[#D4D4D4] list-disc list-inside space-y-4">
+              <li>线性模型</li>
+              <li>逻辑回归</li>
+              <li>神经网络</li>
+              <li>支持向量机 (SVM)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 20-2: 特征缩放 - 标准化代码 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          标准化代码演示
+        </h2>
+        <div class="flex flex-col gap-4 w-full flex-1 mb-8 overflow-hidden">
+          <div class="bg-surface p-3 rounded-lg border border-gray-800 flex-1 overflow-hidden">
+            <pre class="!max-h-none h-full !m-0 overflow-y-auto"><code class="language-python text-[1.6rem]">from sklearn.preprocessing import StandardScaler
+
+# 选取需要缩放的数值型列 (例如 'Age' 和 'Fare')
+numeric_cols = ['Age', 'Fare'] 
+
+# 标准化
+scaler = StandardScaler()
+
+# 只在训练集上 fit，获取均值和标准差
+scaler.fit(X_train[numeric_cols])
+
+# 用相同的参数转换训练集和测试集
+X_train_scaled = X_train.copy()
+X_test_scaled = X_test.copy()
+
+X_train_scaled[numeric_cols] = scaler.transform(X_train[numeric_cols])
+X_test_scaled[numeric_cols] = scaler.transform(X_test[numeric_cols])</code></pre>
+          </div>
+          <div class="bg-[#1E1E1E] p-3 rounded-lg border border-gray-800 shrink-0">
+            <pre class="!m-0 !p-0 !bg-transparent !border-none"><code class="language-plain text-[1.6rem] text-[#D4D4D4]">          Age      Fare
+692 -0.081135  1.587313
+481 -0.081135 -1.168780
+527 -0.081135  2.034199
+855 -0.887827 -0.712650
+801  0.110934  0.111801
+
+均值检查 (应接近0): [7.73413792e-17 1.90858565e-16]
+标准差检查 (应接近1): [1.00070299 1.00070299]</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 21: 特征缩放 - 归一化 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="20"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          特征缩放：归一化 (Normalization)
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-0 max-w-full text-left"
+        >
+          将数据线性变换到一个<strong>固定的区间</strong>，通常是 <code>[0, 1]</code>。
+        </p>
+        
+        <div class="text-[3.5rem] text-center my-0 text-primary flex justify-center w-full">
+          $$ x' = \frac{x - x_{\min}}{x_{\max} - x_{\min}} $$
+        </div>
+
+        <div class="grid grid-cols-2 gap-8 w-full mt-4">
+          <div class="bg-surface p-6 rounded-lg border border-gray-800">
+            <h3 class="text-[2.2rem] font-semibold text-primary mb-4 mt-0">特点与影响</h3>
+            <ul class="text-[2rem] leading-[1.4] text-[#D4D4D4] list-disc list-inside space-y-4">
+              <li>严格限定数据范围，确保结果不会出现负数。</li>
+              <li><strong>受异常值影响极其明显</strong>（极大离群点会破坏正常数值分布）。</li>
+            </ul>
+          </div>
+          <div class="bg-surface p-6 rounded-lg border border-gray-800">
+            <h3 class="text-[2.2rem] font-semibold text-primary mb-4 mt-0">适用场景</h3>
+            <ul class="text-[2rem] leading-[1.4] text-[#D4D4D4] list-disc list-inside space-y-4">
+              <li>图像数据处理（像素天然有 0～255 的边界）</li>
+              <li>神经网络的输入（Sigmoid 等激活函数是有界的）</li>
+              <li>算法强制要求数据范围时</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 20: 工程最佳实践 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="19"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          工程最佳实践 (Pipeline)
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          使用 <code>Pipeline</code> 和
+          <code>ColumnTransformer</code>
+          将整个流程串起来，防止数据泄露，代码更简洁，便于部署。
+        </p>
+        <div class="w-full bg-surface p-6 rounded-lg border border-gray-800 flex-1 mb-8 overflow-hidden">
+          <pre class="!max-h-none h-full !m-0 overflow-y-auto"><code class="language-python text-[1.8rem]">from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+
+# 1. 数值列流水线：填补缺失值 -> 标准化
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+# 2. 类别列流水线：填补缺失值 -> 独热编码
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'))
+])
+
+# 3. 组合流水线
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, ['Age', 'Fare', 'SibSp', 'Parch']),
+        ('cat', categorical_transformer, ['Sex', 'Embarked', 'Pclass'])
+    ])
+
+# 4. 一键处理！
+X_train_ready = preprocessor.fit_transform(X_train)
+X_test_ready = preprocessor.transform(X_test)</code></pre>
+        </div>
+      </div>
+
+      <!-- Slide 21: 总结 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="20"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          总结
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-12 max-w-full text-left"
+        >
+          回顾数据预处理的四条核心原则：
+        </p>
+        <div class="grid grid-cols-2 gap-8 w-full">
+          <div
+            class="bg-surface p-8 rounded-lg border-l-[8px] border-primary shadow-md"
+          >
+            <h3 class="text-[2.8rem] font-bold text-white mb-4">
+              1. Garbage In, Garbage Out
+            </h3>
+            <p class="text-[2.2rem] text-muted">
+              数据质量决定模型上限，再好的算法也无法从垃圾数据中学到有价值的规律。
+            </p>
+          </div>
+          <div
+            class="bg-surface p-8 rounded-lg border-l-[8px] border-primary shadow-md"
+          >
+            <h3 class="text-[2.8rem] font-bold text-white mb-4">
+              2. 防止数据泄露
+            </h3>
+            <p class="text-[2.2rem] text-muted">
+              先划分数据集，所有
+              <code>fit</code> 操作仅在训练集上进行，测试集只做
+              <code>transform</code>。
+            </p>
+          </div>
+          <div
+            class="bg-surface p-8 rounded-lg border-l-[8px] border-primary shadow-md"
+          >
+            <h3 class="text-[2.8rem] font-bold text-white mb-4">3. EDA 驱动</h3>
+            <p class="text-[2.2rem] text-muted">
+              通过 EDA
+              观测数据实际分布，根据业务含义选择填充策略、编码方式和特征变换。
+            </p>
+          </div>
+          <div
+            class="bg-surface p-8 rounded-lg border-l-[8px] border-primary shadow-md"
+          >
+            <h3 class="text-[2.8rem] font-bold text-white mb-4">
+              4. Pipeline 封装
+            </h3>
+            <p class="text-[2.2rem] text-muted">
+              将预处理、特征工程和模型训练封装为流水线，确保流程可复用、无泄露、易部署。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 22: 下一课预告 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]"
+        data-index="21"
+      >
+        <div class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted">
+          <span class="text-primary font-bold">下一课预告</span>
+        </div>
+
+        <div class="mb-12 relative">
+          <div class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"></div>
+          <svg class="w-48 h-48 text-primary relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+        </div>
+
+        <h1 class="text-[6rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]">
+          模型评估、欠拟合与过拟合
+        </h1>
+      </div>
+    </main>
+
+    <!-- Progress Bar -->
+    <div class="fixed bottom-0 left-0 w-full h-2 bg-gray-800 z-50">
+      <div
+        id="progress-bar"
+        class="h-full bg-primary transition-all duration-300"
+        style="width: 0%"
+      ></div>
+    </div>
+
+    <!-- Page Number -->
+    <div
+      id="page-number"
+      class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80"
+    >
+      1 / 32
+    </div>
+
+    <!-- Image Viewer Overlay -->
+    <div id="image-viewer">
+      <img id="image-viewer-img" src="" alt="Fullscreen Image" />
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide-content');
+        const progressBar = document.getElementById('progress-bar');
+        const pageNumber = document.getElementById('page-number');
+        let currentIndex = 0;
+
+        // Image Viewer Logic
+        const imageViewer = document.getElementById('image-viewer');
+        const imageViewerImg = document.getElementById('image-viewer-img');
+        const allImages = document.querySelectorAll('main img');
+
+        allImages.forEach(img => {
+          img.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent slide navigation if any
+            imageViewerImg.src = img.src;
+            imageViewer.style.display = 'flex';
+            // Trigger reflow for transition
+            void imageViewer.offsetWidth;
+            imageViewer.classList.add('active');
+          });
+        });
+
+        imageViewer.addEventListener('click', () => {
+          imageViewer.classList.remove('active');
+          setTimeout(() => {
+            imageViewer.style.display = 'none';
+          }, 300); // Match transition duration
+        });
+
+        function updateSlide(index) {
+          if (index < 0) index = 0;
+          if (index >= slides.length) index = slides.length - 1;
+
+          currentIndex = index;
+
+          // Update visibility
+          slides.forEach((slide, i) => {
+            if (i === currentIndex) {
+              slide.classList.add('active');
+            } else {
+              slide.classList.remove('active');
+            }
+          });
+
+          // Update progress bar
+          const progress = ((currentIndex + 1) / slides.length) * 100;
+          progressBar.style.width = `${progress}%`;
+
+          // Update page number
+          pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+
+          // Update URL hash
+          window.location.hash = `#${currentIndex + 1}`;
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+            updateSlide(currentIndex + 1);
+          } else if (e.key === 'ArrowLeft') {
+            updateSlide(currentIndex - 1);
+          }
+        });
+
+        // Initialize from URL hash
+        const hash = window.location.hash;
+        let initialIndex = 0;
+        if (hash) {
+          const page = parseInt(hash.substring(1), 10);
+          if (!isNaN(page)) {
+            initialIndex = page - 1;
+          }
+        }
+        updateSlide(initialIndex);
+
+        // Handle hash change (e.g. browser back button)
+        window.addEventListener('hashchange', () => {
+          const hash = window.location.hash;
+          if (hash) {
+            const page = parseInt(hash.substring(1), 10);
+            if (!isNaN(page)) {
+              updateSlide(page - 1);
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
