@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Course Slides - 模型评估</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3ECF8E', // Supabase Green
+            bg: '#121212', // Supabase Dark BG
+            surface: '#1C1C1C', // Darker Surface
+            text: '#EDEDED', // Off-white text
+            muted: '#A1A1A1', // Muted text
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <!-- MathJax Configuration -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'],
+          ['\\(', '\\)'],
+        ],
+        displayMath: [
+          ['$$', '$$'],
+          ['\\[', '\\]'],
+        ],
+        processEscapes: true,
+      },
+      svg: {
+        fontCache: 'global',
+      },
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Highlight.js for Syntax Highlighting -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      document.querySelectorAll('pre code').forEach((el) => {
+        hljs.highlightElement(el);
+      });
+    });
+  </script>
+
+  <style>
+    /* Custom scrollbar hide */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    body {
+      background-color: #121212;
+      color: #ededed;
+      overflow: hidden;
+      font-size: 2.4em;
+    }
+
+    /* Slide Transition Logic */
+    .slide-content {
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      pointer-events: none;
+    }
+
+    .slide-content.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    /* Strong Highlight */
+    strong {
+      color: #3ecf8e;
+      font-weight: 700;
+    }
+
+    /* Override hljs background to fit our theme */
+    .hljs {
+      background: transparent !important;
+      padding: 0 !important;
+    }
+
+    /* Image Viewer */
+    img {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    img:hover {
+      transform: scale(1.02);
+    }
+
+    #image-viewer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #image-viewer.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    #image-viewer img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      cursor: zoom-out;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+
+    #image-viewer.active img {
+      transform: scale(1);
+    }
+  </style>
+</head>
+
+<body class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black">
+  <!-- Slides Container -->
+  <main id="slides-container" class="w-full h-full relative">
+    <!-- Slide 1: Title -->
+    <div
+      class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]"
+      data-index="0">
+      <div class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted">
+        <span class="text-primary font-bold">人工智能通识</span>
+        <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+        <span class="text-gray-300">机器学习</span>
+      </div>
+      <div class="mb-12 relative">
+        <div class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"></div>
+        <svg class="w-48 h-48 text-primary relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.5 3h15" />
+          <path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3" />
+          <path d="M6 14h12" />
+          <path d="M6 10h4" />
+          <path d="M6 6h3" />
+        </svg>
+      </div>
+      <h1
+        class="text-[7rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]">
+        模型评估
+      </h1>
+      <p class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]">
+        拟合的前提，是正确判断
+      </p>
+    </div>
+
+    <!-- Slide 2: Baseline -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="1">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        先把 Baseline 跑起来
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        在深入评估之前，我们需要一个可靠的起点。
+      </p>
+      <blockquote
+        class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+        <strong>Baseline（基线模型）</strong>是指首个快速实现、相对简单但具备完整流程的模型。
+      </blockquote>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        它的核心价值不在于极致精度，而在于<strong>建立参照系</strong>——后续的所有优化尝试，都需以此为基准进行对比。
+      </p>
+    </div>
+
+    <!-- Slide 3: Dataset -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="2">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        加州房价数据集
+      </h2>
+      <div class="w-full flex gap-8 flex-1 min-h-0">
+        <div class="bg-[#1E1E1E] rounded-xl overflow-hidden flex flex-col h-full min-w-0" style="flex: 5.5">
+          <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+            Python
+          </div>
+          <pre class="p-6 text-[1.4rem] font-mono overflow-y-auto flex-1"><code class="language-python">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_california_housing
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+
+# 加载数据
+housing = fetch_california_housing()
+X = pd.DataFrame(housing.data,columns=housing.feature_names)
+y = housing.target  # 房价中位数（单位：10万美元）
+
+print(f"样本数: {X.shape[0]}，特征数: {X.shape[1]}")
+print(f"房价范围: [{y.min():.2f}, {y.max():.2f}]，"
+  f"均值: {y.mean():.2f}")
+print(X.head())</code></pre>
+        </div>
+        <div class="flex flex-col gap-8 min-w-0" style="flex: 4.5">
+          <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] max-w-full list-disc list-inside text-left space-y-2">
+            <li><strong>样本规模</strong>：20,640 条记录</li>
+            <li>
+              <strong>特征维度</strong>：8
+              个数值型特征
+            </li>
+            <li>
+              <strong>预测目标</strong>：房屋价格中位数
+            </li>
+          </ul>
+          <div class="bg-[#0D0D0D] rounded-xl overflow-hidden border border-gray-800 flex flex-col flex-1 min-h-0">
+            <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+              Output
+            </div>
+            <pre class="p-6 text-[1.4rem] text-gray-300 font-mono overflow-y-auto flex-1"><code class="language-plaintext">样本数: 20640，特征数: 8
+目标变量范围: [0.15, 5.00]，均值: 2.07
+   MedInc  HouseAge  AveRooms  AveBedrms  Population  AveOccup  Latitude  Longitude
+0  8.3252      41.0  6.984127   1.023810       322.0  2.555556     37.88    -122.23
+1  8.3014      21.0  6.238137   0.971880      2401.0  2.109842     37.86    -122.22
+2  7.2574      52.0  8.288136   1.073446       496.0  2.802260     37.85    -122.24
+3  5.6431      52.0  5.817352   1.073059       558.0  2.547945     37.85    -122.25
+4  3.8462      52.0  6.281853   1.081081       565.0  2.181467     37.85    -122.25</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Train Baseline -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="3">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        训练 Baseline 模型
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        我们对特征进行标准化，划分训练集和测试集，并使用线性回归作为基线模型。
+      </p>
+      <div class="w-full flex gap-8 h-[65vh]">
+        <div class="flex-[5] bg-[#1E1E1E] rounded-xl overflow-hidden flex flex-col">
+          <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+            Python
+          </div>
+          <pre class="p-6 text-[1.6rem] font-mono overflow-y-auto flex-1"><code class="language-python"># 标准化 + 划分数据集
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.2, random_state=42
+)
+
+print(f"训练集: {X_train.shape[0]} 样本")
+print(f"测试集: {X_test.shape[0]} 样本")
+
+# 训练 baseline 模型
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+for i in range(10):
+    print(f"真实值: {y_test[i]}, 预测值: {y_pred[i]}")</code></pre>
+        </div>
+        <div class="flex-[4] bg-[#0D0D0D] rounded-xl overflow-hidden border border-gray-800 flex flex-col">
+          <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+            Output
+          </div>
+          <pre class="p-6 text-[1.6rem] text-gray-300 font-mono overflow-y-auto flex-1"><code class="language-plaintext">训练集: 16512 样本
+测试集: 4128 样本
+
+真实值: 0.477, 预测值: 0.719122841601912
+真实值: 0.458, 预测值: 1.764016570662156
+真实值: 5.00001, 预测值: 2.7096588331728
+真实值: 2.186, 预测值: 2.838925930183314
+真实值: 2.78, 预测值: 2.6046572518103135
+真实值: 1.587, 预测值: 2.01175367324964
+真实值: 1.982, 预测值: 2.645500049376658
+真实值: 1.575, 预测值: 2.168755321287108
+真实值: 3.4, 预测值: 2.7407464411385076
+真实值: 4.466, 预测值: 3.91561472324898</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 5: MAE -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="4">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        回归模型的评估指标 (1/4)
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        模型训练完成后，我们需要在测试集上评估其泛化能力。
+      </p>
+
+      <h3 class="text-[3.5rem] font-semibold text-text mb-4 mt-4">
+        1. MAE（平均绝对误差）
+      </h3>
+      <div class="bg-surface p-0 rounded-lg mb-4 w-full text-center text-[3rem]">
+        $$ \text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i| $$
+      </div>
+      <ul class="text-[2.3rem] leading-[1.6] text-[#D4D4D4] mb-8 max-w-full list-disc list-inside text-left space-y-4">
+        <li>
+          <strong>核心思想</strong>：计算预测值与真实值偏差的绝对值，再求平均。
+        </li>
+        <li>
+          <strong>优点</strong>：直观易懂，单位与目标变量完全一致；对<strong>异常值相对不敏感</strong>，不会过度放大极端错误。
+        </li>
+        <li>
+          <strong>缺点</strong>：在数学上绝对值在零点不可导，作为损失函数优化时不如平方项方便。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 6: MSE -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="5">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        回归模型的评估指标 (2/4)
+      </h2>
+
+      <h3 class="text-[3.5rem] font-semibold text-text mb-8 mt-4">
+        2. MSE（均方误差）
+      </h3>
+      <div class="bg-surface p-0 rounded-lg mb-10 w-full text-center text-[3rem]">
+        $$ \text{MSE} = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2 $$
+      </div>
+      <ul class="text-[2.3rem] leading-[1.6] text-[#D4D4D4] mb-8 max-w-full list-disc list-inside text-left space-y-4">
+        <li>
+          <strong>核心思想</strong>：计算预测值与真实值偏差的平方，再求平均。
+        </li>
+        <li>
+          <strong>特点</strong>：平方操作会<strong>呈指数级放大大误差的影响</strong>。如果业务场景对大偏差零容忍（医疗、自动驾驶），MSE
+          是很好的指标。
+        </li>
+        <li>
+          <strong>缺点</strong>：单位被平方了（例如“平方万美元”），失去了直观的业务含义。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 7: RMSE -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="6">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        回归模型的评估指标 (3/4)
+      </h2>
+
+      <h3 class="text-[3.5rem] font-semibold text-text mb-8 mt-4">
+        3. RMSE（均方根误差）
+      </h3>
+      <div class="bg-surface p-0 rounded-lg mb-10 w-full text-center text-[3rem]">
+        $$ \text{RMSE} = \sqrt{\text{MSE}} $$
+      </div>
+      <ul class="text-[2.4rem] leading-[1.6] text-[#D4D4D4] mb-8 max-w-full list-disc list-inside text-left space-y-4">
+        <li><strong>核心思想</strong>：对 MSE 开根号。</li>
+        <li>
+          <strong>为什么最常用？</strong>
+          <ul class="ml-12 mt-4 space-y-2">
+            <li>
+              <strong>单位还原</strong>：量纲回到了和目标变量一致，业务上容易解释。
+            </li>
+            <li>
+              <strong>惩罚大误差</strong>：继承了 MSE 对大偏差敏感的特性。
+            </li>
+          </ul>
+        </li>
+        <li>
+          在实际工程和数据科学竞赛（如 Kaggle）中，RMSE 是回归任务的默认标准。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 8: R2 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="7">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        回归模型的评估指标 (4/4)
+      </h2>
+
+      <h3 class="text-[3.5rem] font-semibold text-text mb-4 mt-4">
+        4. R²（决定系数）
+      </h3>
+      <div class="bg-surface p-0 rounded-lg mb-4 w-full text-center text-[2.8rem]">
+        $$ R^2 = 1 - \frac{\sum(y_i -
+        \hat{y}_i)^2}{\sum(y_i - \bar{y})^2} $$
+      </div>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left">
+        <strong>核心问题</strong>：我们的模型比“瞎猜”（直接用均值预测）好多少？
+      </p>
+      <ul class="text-[2.2rem] leading-[1.4] text-[#D4D4D4] mb-8 max-w-full list-disc list-inside text-left space-y-3">
+        <li>
+          <strong>无量纲指标</strong>：衡量模型消除了总方差中多大比例的不确定性，可在不同数据集间横向比较。
+        </li>
+        <li><strong>R² = 1</strong>：完美预测，没有任何误差。</li>
+        <li>
+          <strong>R² = 0</strong>：模型表现和直接预测所有样本的平均值一样，等于没学到有效特征。
+        </li>
+        <li>
+          <strong>R² < 0</strong>：模型预测得比直接猜平均值还差（通常是因为选错了模型或存在严重Bug）。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 9: Baseline Results -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="8">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        Baseline 评估结果
+      </h2>
+      <div class="w-full flex gap-8 h-[70vh]">
+        <div class="flex-[2.5] bg-[#1E1E1E] rounded-xl overflow-hidden flex flex-col">
+          <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+            Python
+          </div>
+          <pre class="p-6 text-[1.5rem] font-mono overflow-y-auto flex-1"><code class="language-python">from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error, r2_score
+
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, y_pred)
+
+print(f"MAE: {mae:.4f}  （平均偏差 {mae*10:.2f}万美元）")
+print(f"MSE: {mse:.4f}")
+print(f"RMSE: {rmse:.4f} （平均偏差 {rmse*10:.2f}万美元）")
+print(f"R²:  {r2:.4f}  （解释了 {r2*100:.1f}% 的方差）")</code></pre>
+        </div>
+        <div class="flex-[2] flex flex-col gap-6">
+          <div class="bg-[#0D0D0D] rounded-xl overflow-hidden border border-gray-800 flex flex-col h-[40%]">
+            <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+              Output
+            </div>
+            <pre class="p-6 text-[1.4rem] text-gray-300 font-mono overflow-y-auto flex-1"><code class="language-plaintext">MAE:  0.5332  （平均偏差 5.33 万美元）
+MSE:  0.5559
+RMSE: 0.7456  （平均偏差 7.46 万美元）
+R²:   0.5757  （解释了 57.6% 的方差）</code></pre>
+          </div>
+          <div class="bg-surface rounded-xl p-6 flex-1 overflow-y-auto">
+            <h3 class="text-[2rem] font-semibold text-primary mb-4">解读</h3>
+            <ul class="text-[1.7rem] leading-[1.4] text-[#D4D4D4] list-disc list-inside space-y-2">
+              <li>
+                <strong>RMSE > MAE</strong>：说明存在一些偏差较大的样本把 RMSE
+                拉高了。
+              </li>
+              <li>
+                <strong>R² = 0.576</strong>：解释了约 57.6% 的房价方差，剩余
+                42.4% 未捕获。
+              </li>
+              <li>
+                对于只用 8 个特征的线性模型，这是个合理的起点，但有提升空间。
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 10: Residual Analysis -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="9">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        残差分析：数字之外的诊断
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left">
+        指标只给出全局汇总，残差分析能告诉我们模型在哪里表现好、哪里差。
+      </p>
+      <div class="bg-surface p-4 rounded-lg mb-6 w-full text-center">
+        $$ e_{i} = y_{i} - \hat y_{i} \quad \text{(真实值 - 预测值)} $$
+      </div>
+      <div class="w-full flex justify-center items-center h-[45vh] bg-white rounded-xl overflow-hidden p-4">
+        <img src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774445276706-1c0a9764-fbed-42e4-aed1-3cd43c468980.png"
+          alt="残差分析图" class="max-h-full object-contain" />
+      </div>
+    </div>
+
+    <!-- Slide 11: Residual Insights -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="10">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        残差分析解读
+      </h2>
+      <ul
+        class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-decimal list-inside text-left space-y-8">
+        <li>
+          <strong>预测值与真实值对比图</strong>：<br />
+          真实值较高时，预测值普遍偏低，说明<strong>模型倾向于低估高价房产</strong>。右侧的垂直聚集现象是数据截断效应（最高50万美元）。
+        </li>
+        <li>
+          <strong>残差与预测值关系图</strong>：<br />
+          随着预测值增大，残差的发散程度也在变大（漏斗形），说明<strong>模型预测高房价时非常不稳定</strong>。
+        </li>
+        <li>
+          <strong>残差分布直方图</strong>：<br />
+          残差整体呈现<strong>右偏</strong>且带有长尾——再次印证了模型对部分高房价样本严重低估的问题。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 12: Cross Validation -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="11">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        交叉验证：剔除随机性带来的偏差
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        单次 train/test split
+        的评估结果可能依赖于运气。为了获得更稳定、更具统计显著性的评估结果，我们采用
+        <strong>K-Fold 交叉验证</strong>。
+      </p>
+      <blockquote
+        class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+        将数据均匀分成 K 份。每一轮取 1 份作为测试集，剩余 K-1
+        份作为训练集。重复 K 轮，最终报告 K 次评估结果的均值和标准差。
+      </blockquote>
+    </div>
+
+    <!-- Slide 13: Cross Validation Code -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="12">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        K-Fold 交叉验证实战
+      </h2>
+      <div class="w-full flex gap-8 h-[75vh]">
+        <div class="flex-[3] bg-[#1E1E1E] rounded-xl overflow-hidden flex flex-col">
+          <pre class="p-6 text-[1.5rem] font-mono overflow-y-auto flex-1"><code class="language-python">from sklearn.model_selection import cross_val_score
+
+# 注意：cross_val_score 会在内部完成 fit 和 predict，不需要手动划分
+scores = cross_val_score(
+    LinearRegression(), X_scaled, y,
+    cv=5,                              # 5 折交叉验证
+    scoring='neg_mean_squared_error'
+)
+
+# 将负 MSE 转换回 RMSE
+rmse_scores = np.sqrt(-scores)
+
+print("每折 RMSE:")
+for i, score in enumerate(rmse_scores):
+    print(f"  Fold {i+1}: {score:.4f}")
+
+print(f"\n平均 RMSE: {rmse_scores.mean():.4f} "
+    f"± {rmse_scores.std():.4f}")</code></pre>
+        </div>
+        <div class="flex-[2] bg-[#0D0D0D] rounded-xl overflow-hidden border border-gray-800 flex flex-col">
+          <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+            Output
+          </div>
+          <pre class="p-6 text-[1.5rem] text-gray-300 font-mono overflow-y-auto flex-1"><code class="language-plaintext">每折 RMSE:
+  Fold 1: 0.6963
+  Fold 2: 0.7890
+  Fold 3: 0.8039
+  Fold 4: 0.7370
+  Fold 5: 0.7033
+
+平均 RMSE: 0.7459 ± 0.0437</code></pre>
+          <div class="p-6 bg-surface text-[1.6rem] text-[#D4D4D4] border-t border-gray-800">
+            标准差极小（约
+            5.9%），说明线性回归模型在不同数据划分下表现非常稳定。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 14: Train vs Test -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="13">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        深入诊断：训练集 vs 测试集
+      </h2>
+      <div class="w-full flex gap-8 h-[70vh]">
+        <div class="flex-[3] bg-[#1E1E1E] rounded-xl overflow-hidden flex flex-col">
+          <pre class="p-6 text-[1.3rem] font-mono overflow-y-auto flex-1"><code class="language-python">from sklearn.model_selection import cross_validate
+
+cv_results = cross_validate(
+    LinearRegression(), X_scaled, y,
+    cv=5,
+    scoring={
+        'rmse': 'neg_root_mean_squared_error',
+        'mae': 'neg_mean_absolute_error',
+        'r2': 'r2'
+    },
+    return_train_score=True  # 同时返回训练集上的得分（用于诊断过拟合）
+)
+
+print(f"{'指标':<12} {'训练集':>12} {'测试集':>12} {'差距':>10}")
+print("-" * 48)
+for metric in ['rmse', 'mae', 'r2']:
+    train_key = f'train_{metric}'
+    test_key = f'test_{metric}'
+    
+    if metric == 'r2':
+        train_mean = cv_results[train_key].mean()
+        test_mean = cv_results[test_key].mean()
+    else:
+        train_mean = -cv_results[train_key].mean()  # 去掉负号
+        test_mean = -cv_results[test_key].mean()
+    
+    gap = abs(train_mean - test_mean)
+
+    print(f"{metric.upper():<12} {train_mean:>12.4f} "
+        f"{test_mean:>12.4f} {gap:>10.4f}")</code></pre>
+        </div>
+        <div class="flex-[2] flex flex-col gap-6">
+          <div class="bg-[#0D0D0D] rounded-xl overflow-hidden border border-gray-800 flex flex-col h-[40%]">
+            <div class="bg-black/40 px-4 py-2 text-sm text-gray-400 font-mono">
+              Output
+            </div>
+            <pre class="p-6 text-[1.4rem] text-gray-300 font-mono flex-1"><code class="language-plaintext">指标       训练集        测试        差距
+----------------------------------------
+RMSE       0.7218       0.7459     0.0241
+MAE        0.5297       0.5475     0.0178
+R2         0.6071       0.5530     0.0541</code></pre>
+          </div>
+          <div class="bg-surface rounded-xl p-6 flex-1 overflow-y-auto">
+            <h3 class="text-[2rem] font-semibold text-primary mb-4">
+              核心发现
+            </h3>
+            <ul class="text-[1.8rem] leading-[1.6] text-[#D4D4D4] list-disc list-inside space-y-2">
+              <li>
+                <strong>未过拟合</strong>：训练集和测试集指标非常接近
+              </li>
+              <li>
+                <strong>存在欠拟合</strong>：训练集上的表现本身也不算出色（R²
+                只有
+                0.61），说明模型可能还<strong>没有充分挖掘数据中的信息</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 15: Next Lesson Preview -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="14">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        下节预告：欠拟合与过拟合
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        在了解了如何评估模型之后，我们将深入探讨模型训练中常见的两个核心挑战：
+      </p>
+      <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left space-y-6">
+        <li>
+          <strong>欠拟合 (Underfitting)</strong>：模型太简单，连训练数据都学不好。
+        </li>
+        <li>
+          <strong>过拟合 (Overfitting)</strong>：模型太复杂，死记硬背了训练数据，但在新数据上表现糟糕。
+        </li>
+      </ul>
+      <blockquote
+        class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+        如何诊断这两种状态？又该如何找到模型的“黄金分割点”？敬请期待！
+      </blockquote>
+    </div>
+  </main>
+
+  <!-- Progress Bar -->
+  <div class="fixed bottom-0 left-0 w-full h-2 bg-gray-800 z-50">
+    <div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
+  </div>
+
+  <!-- Page Number -->
+  <div id="page-number" class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80">
+    1 / 1
+  </div>
+
+  <!-- Image Viewer Overlay -->
+  <div id="image-viewer">
+    <img id="image-viewer-img" src="" alt="Fullscreen Image" />
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const slides = document.querySelectorAll('.slide-content');
+      const progressBar = document.getElementById('progress-bar');
+      const pageNumber = document.getElementById('page-number');
+      let currentIndex = 0;
+
+      // Image Viewer Logic
+      const imageViewer = document.getElementById('image-viewer');
+      const imageViewerImg = document.getElementById('image-viewer-img');
+      const allImages = document.querySelectorAll('main img');
+
+      allImages.forEach(img => {
+        img.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent slide navigation if any
+          imageViewerImg.src = img.src;
+          imageViewer.style.display = 'flex';
+          // Trigger reflow for transition
+          void imageViewer.offsetWidth;
+          imageViewer.classList.add('active');
+        });
+      });
+
+      imageViewer.addEventListener('click', () => {
+        imageViewer.classList.remove('active');
+        setTimeout(() => {
+          imageViewer.style.display = 'none';
+        }, 300); // Match transition duration
+      });
+
+      function updateSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= slides.length) index = slides.length - 1;
+
+        currentIndex = index;
+
+        // Update visibility
+        slides.forEach((slide, i) => {
+          if (i === currentIndex) {
+            slide.classList.add('active');
+          } else {
+            slide.classList.remove('active');
+          }
+        });
+
+        // Update progress bar
+        const progress = ((currentIndex + 1) / slides.length) * 100;
+        progressBar.style.width = `${progress}%`;
+
+        // Update page number
+        pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+
+        // Update URL hash
+        window.location.hash = `#${currentIndex + 1}`;
+      }
+
+      // Keyboard Navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+          updateSlide(currentIndex + 1);
+        } else if (e.key === 'ArrowLeft') {
+          updateSlide(currentIndex - 1);
+        }
+      });
+
+      // Initialize from URL hash
+      const hash = window.location.hash;
+      let initialIndex = 0;
+      if (hash) {
+        const page = parseInt(hash.substring(1), 10);
+        if (!isNaN(page)) {
+          initialIndex = page - 1;
+        }
+      }
+      updateSlide(initialIndex);
+
+      // Handle hash change (e.g. browser back button)
+      window.addEventListener('hashchange', () => {
+        const hash = window.location.hash;
+        if (hash) {
+          const page = parseInt(hash.substring(1), 10);
+          if (!isNaN(page)) {
+            updateSlide(page - 1);
+          }
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
