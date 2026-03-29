@@ -5,6 +5,12 @@ This document outlines the standard procedure for generating HTML slides from Ma
 ## Goal
 Intelligently synthesize Markdown documentation into a compelling, single-file HTML presentation. The Agent must read, understand, and refine the content—extracting key insights and restructuring them for a slide format—rather than mechanically converting Markdown to HTML.
 
+## 特别注意
+- 一定要引用原文中的图片，在Slides 中的图片支持点击后最大化
+- 参考内容一般都会把逻辑组织的特别好了，生成Slides 时候要完整保留其核心逻辑，可以适当裁剪、润色内容
+- 不要对代码做精简，可以使用垂直滚动条，代码需要高亮
+- 不要强行把内容挤在一页，内容较多就分多页展示
+
 ## Constraints & Requirements
 1.  **Format**: Single HTML file (no external local dependencies).
 2.  **Styling**: Tailwind CSS (via CDN). **Use Tailwind utility classes directly for all styling. Do not write custom CSS in `<style>` blocks except for essential transition logic and `strong` tag highlighting.**

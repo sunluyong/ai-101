@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>欠拟合与过拟合 - AI Course Slides</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3ECF8E', // Supabase Green
+            bg: '#121212', // Supabase Dark BG
+            surface: '#1C1C1C', // Darker Surface
+            text: '#EDEDED', // Off-white text
+            muted: '#A1A1A1', // Muted text
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <!-- Highlight.js for Syntax Highlighting -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- MathJax Configuration -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'],
+          ['\\(', '\\)'],
+        ],
+        displayMath: [
+          ['$$', '$$'],
+          ['\\[', '\\]'],
+        ],
+        processEscapes: true,
+      },
+      svg: {
+        fontCache: 'global',
+      },
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    /* Custom scrollbar hide for body */
+    body::-webkit-scrollbar {
+      display: none;
+    }
+
+    body {
+      background-color: #121212;
+      color: #ededed;
+      overflow: hidden;
+      font-size: 2.4em;
+    }
+
+    /* Slide Transition Logic */
+    .slide-content {
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      pointer-events: none;
+    }
+
+    .slide-content.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    /* Strong Highlight */
+    strong {
+      color: #3ecf8e;
+      font-weight: 700;
+    }
+
+    /* Custom Scrollbar for Code Blocks */
+    .custom-scrollbar {
+      overflow-y: auto;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      display: block;
+      width: 8px;
+      height: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1c1c1c;
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #3ecf8e;
+      border-radius: 4px;
+    }
+
+    /* Fix highlight.js background to match our theme */
+    .hljs {
+      background: transparent !important;
+      padding: 0 !important;
+    }
+
+    /* Image Viewer */
+    img {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    img:hover {
+      transform: scale(1.02);
+    }
+
+    #image-viewer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #image-viewer.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    #image-viewer img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+      cursor: zoom-out;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+
+    #image-viewer.active img {
+      transform: scale(1);
+    }
+  </style>
+</head>
+
+<body class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black">
+  <!-- Slides Container -->
+  <main id="slides-container" class="w-full h-full relative">
+    <!-- Slide 1: Title -->
+    <div
+      class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]"
+      data-index="0">
+      <div class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted">
+        <span class="text-primary font-bold">人工智能通识</span>
+        <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+        <span class="text-gray-300">机器学习</span>
+      </div>
+      <div class="mb-12 relative">
+        <div class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"></div>
+        <svg class="w-48 h-48 text-primary relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+          </path>
+        </svg>
+      </div>
+      <h1
+        class="text-[7rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]">
+        欠拟合与过拟合
+      </h1>
+      <p class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]">
+        模型评估与优化的核心概念
+      </p>
+    </div>
+
+    <!-- Slide 2: 什么是泛化能力 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="1">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        训练模型的困境
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        机器学习目标是训练出一个能够捕捉数据背后潜在规律的模型，使其不仅能够很好地拟合训练数据，还能对<strong>从未见过的新数据</strong>做出准确预测，这种能力被称为泛化能力。
+      </p>
+      <blockquote
+        class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block">
+        然而，模型并不总能具备良好的泛化能力，就像做菜时的火候——<br /><br />
+        🔥 火太小，食材夹生（学得太少）<br />
+        🔥 火太大，外焦里糊（学得太多）<br /><br />
+        模型训练也是一样：学得太少或学得太多，都会导致预测效果不佳。
+      </blockquote>
+    </div>
+
+    <!-- Slide 3: 欠拟合 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="2">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        欠拟合 (Underfitting)
+      </h2>
+      <h3 class="text-[2.5rem] font-semibold text-text mb-6 mt-0">
+        模型过于简单
+      </h3>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        未能充分学习训练数据中的规律，导致其在<strong>训练集和测试集上的表现都很差</strong>。
+      </p>
+      <div class="bg-surface p-8 rounded-xl w-full mt-8 border border-gray-800">
+        <h4 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+          生动比喻
+        </h4>
+        <p class="text-[2.4rem] leading-[1.4] mb-0 text-gray-300">
+          就像一个学生只背了课本的目录，连课堂上讲过的例题都做不对，考试遇到新题更是无从下手。他不是粗心，而是压根没学进去。
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 4: 过拟合 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="3">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        过拟合 (Overfitting)
+      </h2>
+      <h3 class="text-[2.5rem] font-semibold text-text mb-6 mt-0">
+        模型过于复杂
+      </h3>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        不仅学到了数据中的真实规律，还将<strong>噪声</strong>也一并记住了，导致其在<strong>训练集上表现优异，但在测试集上表现明显下降</strong>。
+      </p>
+      <div class="bg-surface p-8 rounded-xl w-full mt-8 border border-gray-800">
+        <h4 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+          生动比喻
+        </h4>
+        <p class="text-[2.4rem] leading-[1.4] mb-0 text-gray-300">
+          就像一个学生死记硬背了所有课后习题的标准答案，题目稍加变化就束手无策——他记住的是答案本身，而非解题方法。
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 5: 直观对比 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="4">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        直观对比
+      </h2>
+      <div class="w-full mt-12">
+        <table class="w-full text-left border-collapse text-[2.4rem]">
+          <thead>
+            <tr class="border-b-2 border-gray-700 text-primary">
+              <th class="py-6 px-4">状态</th>
+              <th class="py-6 px-4">训练集表现</th>
+              <th class="py-6 px-4">测试集表现</th>
+              <th class="py-6 px-4">核心问题</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-300">
+            <tr class="border-b border-gray-800 bg-surface/50">
+              <td class="py-6 px-4 font-bold text-white">恰好拟合</td>
+              <td class="py-6 px-4 text-green-400">✅ 好</td>
+              <td class="py-6 px-4 text-green-400">✅ 好</td>
+              <td class="py-6 px-4">真正学到了规律</td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-6 px-4 font-bold text-white">欠拟合</td>
+              <td class="py-6 px-4 text-red-400">❌ 差</td>
+              <td class="py-6 px-4 text-red-400">❌ 差</td>
+              <td class="py-6 px-4">没学到规律</td>
+            </tr>
+            <tr class="border-b border-gray-800 bg-surface/50">
+              <td class="py-6 px-4 font-bold text-white">过拟合</td>
+              <td class="py-6 px-4 text-green-400">✅ 很好</td>
+              <td class="py-6 px-4 text-red-400">❌ 差</td>
+              <td class="py-6 px-4">把噪声也当成了规律</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Slide 6: 诊断工具：学习曲线 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="5">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        诊断工具：学习曲线
+      </h2>
+      <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left">
+        学习曲线可以展示误差随样本增加的变化趋势，假设数据的真实规律是 $$ y=x^2 $$，并带有随机噪声。我们用不同复杂度的多项式来拟合：
+      </p>
+      <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left space-y-6">
+        <li>
+          <strong>degree=1</strong>：线性模型，无法捕捉二次关系，导致<strong>欠拟合</strong>
+        </li>
+        <li>
+          <strong>degree=2</strong>：二次多项式，与真实数据生成过程匹配，<strong>良好拟合</strong>
+        </li>
+        <li>
+          <strong>degree=15</strong>：高次多项式，过度拟合训练数据中的噪声，导致<strong>过拟合</strong>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 7: 代码实现 - 模拟数据与可视化 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="6">
+      <h2 class="text-[4rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        代码实现：模拟数据与效果可视化
+      </h2>
+      <div class="w-full flex-1 mt-2 rounded-xl bg-[#1e1e1e] border border-gray-700 p-6 custom-scrollbar">
+        <pre><code class="language-python text-[1.8rem] leading-[1.5] font-mono">import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import learning_curve
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+
+# 设置中文字体，解决matplotlib中文显示问题
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
+plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
+# ---------- 数据准备 ----------
+np.random.seed(42)  # 设置随机种子，保证结果可复现
+n_samples = 100  # 样本数量
+
+# 在[-3, 3]区间均匀采样100个点
+X = np.sort(np.random.uniform(-3, 3, n_samples)).reshape(-1, 1)  
+# 真实关系: y = x² + 高斯噪声
+y = X.ravel() ** 2 + np.random.normal(0, 1, n_samples) 
+
+# ---------- 定义三个不同复杂度的模型 ----------
+models = {
+    "欠拟合 (degree=1)": make_pipeline(PolynomialFeatures(1), LinearRegression()),
+    "良好拟合 (degree=2)": make_pipeline(PolynomialFeatures(2), LinearRegression()),
+    "过拟合 (degree=15)": make_pipeline(PolynomialFeatures(15), LinearRegression()),
+}
+
+# ---------- 拟合效果可视化 ----------
+# 创建1行3列的子图，展示模型的拟合效果
+fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+# 用于绘制平滑预测曲线的测试点
+X_test = np.linspace(-3, 3, 200).reshape(-1, 1)
+
+for ax, (title, model) in zip(axes, models.items()):
+    # 训练模型
+    model.fit(X, y)
+    # 预测
+    y_pred = model.predict(X_test)
+    
+    # 绘制真实数据点（带噪声的样本）
+    ax.scatter(X, y, color='steelblue', s=30, alpha=0.6, label='训练数据')
+    # 绘制真实函数曲线 y = x²
+    ax.plot(X_test, X_test.ravel() ** 2, '--', color='gray', linewidth=2, label='真实函数 $y=x^2$')
+    # 绘制模型预测曲线
+    ax.plot(X_test, y_pred, '-', color='tomato', linewidth=2, label='模型预测')
+    
+    ax.set_title(title, fontsize=14)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_xlim(-3.5, 3.5)
+    ax.set_ylim(-1, 12)
+
+plt.tight_layout()
+plt.show()</code></pre>
+      </div>
+    </div>
+
+    <!-- Slide 8: 拟合效果直观对比 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="7">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        拟合效果直观对比
+      </h2>
+      <div class="w-full flex justify-center mb-8 h-[45vh]">
+        <img src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774778884164-57e8c882-7403-4a41-b633-9d9ea2782e88.png"
+          alt="拟合效果对比" class="h-full object-contain rounded-xl shadow-lg border border-gray-700" />
+      </div>
+      <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] max-w-full list-disc list-inside text-left space-y-4">
+        <li><strong>图 1 (欠拟合)</strong>：直线无法捕捉数据的弯曲趋势。</li>
+        <li>
+          <strong>图 2 (良好拟合)</strong>：二次多项式精准捕捉抛物线趋势，不被噪声带偏。
+        </li>
+        <li>
+          <strong>图 3 (过拟合)</strong>：15次多项式精确穿过每个受干扰的样本，曲线扭曲怪异。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 9: 代码实现 - 学习曲线 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="8">
+      <h2 class="text-[4rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        代码实现：绘制学习曲线
+      </h2>
+      <div class="w-full flex-1 mt-2 rounded-xl bg-[#1e1e1e] border border-gray-700 p-6 custom-scrollbar">
+        <pre><code class="language-python text-[1.8rem] leading-[1.5] font-mono"># 创建1行3列的子图
+fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+# 遍历每个模型，绘制学习曲线
+for ax, (title, model) in zip(axes, models.items()):
+    train_sizes, train_scores, val_scores = learning_curve(
+        model, X, y,
+        train_sizes=np.linspace(0.1, 1.0, 10),  # 10个训练集大小: 10%, 20%, ..., 100%
+        cv=5,  # 5-Fold 交叉验证
+        scoring="neg_mean_squared_error",  # 使用负均方误差作为评分指标
+    )
+
+    # 将负MSE 转换为正MSE，并对交叉验证结果取平均
+    train_mse = -train_scores.mean(axis=1)
+    val_mse   = -val_scores.mean(axis=1)
+
+    # 绘制训练误差曲线
+    ax.plot(train_sizes, train_mse, "o-", color="steelblue", label="训练误差")
+    # 绘制验证误差曲线
+    ax.plot(train_sizes, val_mse,   "o-", color="tomato",    label="验证误差")
+    ax.set_title(title, fontsize=14)
+    ax.set_xlabel("训练样本数")
+    ax.set_ylabel("MSE")
+    ax.legend()
+    ax.set_yscale("log")  # 使用对数刻度，便于展示差异较大的误差值
+    ax.grid(True, alpha=0.3)
+
+plt.tight_layout()  # 自动调整子图间距
+plt.show()</code></pre>
+      </div>
+    </div>
+
+    <!-- Slide 10: 学习曲线分析 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="9">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        学习曲线分析
+      </h2>
+      <div class="w-full flex justify-center mb-8 h-[45vh]">
+        <img src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774779303779-316f3abc-4121-4f9f-add5-6ea06a2f3592.png"
+          alt="学习曲线对比" class="h-full object-contain rounded-xl shadow-lg border border-gray-700" />
+      </div>
+      <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] max-w-full list-disc list-inside text-left space-y-4">
+        <li>
+          <strong>欠拟合</strong>：训练和验证误差都<strong>高</strong>，且差距不大，加数据也没用。
+        </li>
+        <li>
+          <strong>良好拟合</strong>：训练和验证误差都<strong>低</strong>，逐渐收敛。
+        </li>
+        <li>
+          <strong>过拟合</strong>：训练误差极低，验证误差极高，<strong>差距大</strong>，加数据可能有帮助。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 11: 如何解决欠拟合 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="10">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        如何解决欠拟合
+      </h2>
+      <h3 class="text-[2.5rem] font-semibold text-text mb-6 mt-0">
+        核心思路：让模型更有表达力（做加法）
+      </h3>
+
+      <div class="grid grid-cols-2 gap-8 w-full mt-8">
+        <div class="bg-surface p-8 rounded-xl border border-gray-800">
+          <h4 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+            1. 特征工程
+          </h4>
+          <ul class="text-[2.2rem] leading-[1.6] text-gray-300 list-disc list-inside space-y-3">
+            <li><strong>多项式特征</strong>：添加高次项</li>
+            <li><strong>特征交叉</strong>：组合多个特征</li>
+            <li><strong>数学变换</strong>：对数、指数等</li>
+            <li><strong>领域特征</strong>：结合业务知识</li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-8">
+          <div class="bg-surface p-8 rounded-xl border border-gray-800">
+            <h4 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+              2. 增加训练轮数
+            </h4>
+            <p class="text-[2.2rem] leading-[1.4] text-gray-300">
+              增加 epochs，给模型更多学习时间，直到损失不再下降。
+            </p>
+          </div>
+          <div class="bg-surface p-8 rounded-xl border border-gray-800">
+            <h4 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+              3. 增加模型复杂度
+            </h4>
+            <p class="text-[2.2rem] leading-[1.4] text-gray-300">
+              从简单模型（如线性回归）切换到复杂模型（如随机森林、决策树）。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 12: 代码实现 - 增加模型复杂度 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="11">
+      <h2 class="text-[4rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        代码实现：增加模型复杂度
+      </h2>
+      <div class="w-full flex-1 mt-2 rounded-xl bg-[#1e1e1e] border border-gray-700 p-6 custom-scrollbar">
+        <pre><code class="language-python text-[1.8rem] leading-[1.5] font-mono">models = {
+    "线性回归": make_pipeline(StandardScaler(), LinearRegression()),
+    "决策树 (max_depth=5)": DecisionTreeRegressor(max_depth=5, random_state=42),
+    "随机森林 (100棵树)": RandomForestRegressor(
+        n_estimators=100, max_depth=10, random_state=42, n_jobs=-1
+    ),
+}
+
+results = []
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    train_r2 = r2_score(y_train, model.predict(X_train))
+    test_r2  = r2_score(y_test,  model.predict(X_test))
+    
+    results.append({
+        "模型": name,
+        "训练 R²": train_r2,
+        "测试 R²": test_r2,
+        "差距 (R²)": train_r2 - test_r2,
+    })
+
+df_results = pd.DataFrame(results)
+print(df_results.to_string(index=False, float_format="%.4f"))
+
+# 输出结果：
+#                   模型  训练 R²   测试 R²   差距 (R²)
+#               线性回归   0.6107   0.5957     0.0150
+#   决策树 (max_depth=5)   0.7086   0.6905     0.0181
+#   随机森林 (100棵树)      0.9136   0.8068     0.1068</code></pre>
+      </div>
+    </div>
+
+    <!-- Slide 13: 如何解决过拟合 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="12">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        如何解决过拟合
+      </h2>
+
+      <h3 class="text-[2.2rem] font-semibold  mb-8 flex items-center gap-3">
+        核心思路：让模型别太极端（做减法）
+      </h3>
+
+      <div class="grid grid-cols-3 gap-8 w-full">
+        <!-- Card 1 -->
+        <div
+          class="bg-surface/80 p-8 rounded-2xl border border-gray-700 hover:border-primary/50 hover:bg-surface transition-all duration-300 hover:-translate-y-2 shadow-lg group">
+          <div class="flex items-center gap-4 mb-3">
+            <div class="text-[3rem] group-hover:scale-110 transition-transform origin-left">
+              📊
+            </div>
+            <h4 class="text-[2.4rem] font-bold text-white m-0">
+              增加训练数据
+            </h4>
+          </div>
+          <p class="text-[1.8rem] leading-[1.5] text-gray-400">
+            更多数据让噪声被稀释（数据获取成本低时）。
+          </p>
+        </div>
+        <!-- Card 2 -->
+        <div
+          class="bg-surface/80 p-8 rounded-2xl border border-primary/50 relative overflow-hidden hover:border-primary hover:bg-surface transition-all duration-300 hover:-translate-y-2 shadow-[0_0_20px_rgba(62,207,142,0.15)] group">
+          <div class="absolute top-0 right-0 bg-primary text-black text-[1.2rem] font-bold px-4 py-1 rounded-bl-lg">
+            最通用
+          </div>
+          <div class="flex items-center gap-4 mb-3">
+            <div class="text-[3rem] group-hover:scale-110 transition-transform origin-left">
+              ⚖️
+            </div>
+            <h4 class="text-[2.4rem] font-bold text-primary m-0">正则化</h4>
+          </div>
+          <p class="text-[1.8rem] leading-[1.5] text-gray-300">
+            给模型复杂度加惩罚，限制权重大小，防止死记硬背。
+          </p>
+        </div>
+        <!-- Card 3 -->
+        <div
+          class="bg-surface/80 p-8 rounded-2xl border border-gray-700 hover:border-primary/50 hover:bg-surface transition-all duration-300 hover:-translate-y-2 shadow-lg group">
+          <div class="flex items-center gap-4 mb-3">
+            <div class="text-[3rem] group-hover:scale-110 transition-transform origin-left">
+              ✂️
+            </div>
+            <h4 class="text-[2.4rem] font-bold text-white m-0">
+              降低模型复杂度
+            </h4>
+          </div>
+          <p class="text-[1.8rem] leading-[1.5] text-gray-400">
+            使用更简单的模型（如减少多项式阶数或树的深度）。
+          </p>
+        </div>
+        <!-- Card 4 -->
+        <div
+          class="bg-surface/80 p-8 rounded-2xl border border-gray-700 hover:border-primary/50 hover:bg-surface transition-all duration-300 hover:-translate-y-2 shadow-lg group">
+          <div class="flex items-center gap-4 mb-3">
+            <div class="text-[3rem] group-hover:scale-110 transition-transform origin-left">
+              🎯
+            </div>
+            <h4 class="text-[2.4rem] font-bold text-white m-0">特征选择</h4>
+          </div>
+          <p class="text-[1.8rem] leading-[1.5] text-gray-400">
+            主动去掉无关或冗余的特征，减少干扰信号。
+          </p>
+        </div>
+        <!-- Card 5 -->
+        <div
+          class="bg-surface/80 p-8 rounded-2xl border border-gray-700 hover:border-primary/50 hover:bg-surface transition-all duration-300 hover:-translate-y-2 shadow-lg group">
+          <div class="flex items-center gap-4 mb-3">
+            <div class="text-[3rem] group-hover:scale-110 transition-transform origin-left">
+              🛑
+            </div>
+            <h4 class="text-[2.4rem] font-bold text-white m-0">
+              早停 (Early Stopping)
+            </h4>
+          </div>
+          <p class="text-[1.8rem] leading-[1.5] text-gray-400">
+            在验证集误差开始上升时，及时停止训练过程。
+          </p>
+        </div>
+        <!-- Card 6 -->
+        <div
+          class="bg-surface/80 p-8 rounded-2xl border border-gray-700 hover:border-primary/50 hover:bg-surface transition-all duration-300 hover:-translate-y-2 shadow-lg group">
+          <div class="flex items-center gap-4 mb-3">
+            <div class="text-[3rem] group-hover:scale-110 transition-transform origin-left">
+              🧠
+            </div>
+            <h4 class="text-[2.4rem] font-bold text-white m-0">
+              Dropout / 数据增强
+            </h4>
+          </div>
+          <p class="text-[1.8rem] leading-[1.5] text-gray-400">
+            深度学习中的常用防过拟合高级技巧。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 14: 深入理解正则化 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="13">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        深入理解正则化
+      </h2>
+      <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-2 max-w-full text-left">
+        <strong>核心思想</strong>：在损失函数中额外加一个惩罚项，系数越大罚得越重，让模型尽可能用小的系数拟合。
+      </p>
+
+      <div class="grid grid-cols-2 gap-12 w-full mt-8">
+        <div
+          class="bg-gradient-to-b from-surface to-black/80 p-10 rounded-2xl border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.1)] transform transition-transform hover:scale-105">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-4 h-12 bg-cyan-500 rounded-full"></div>
+            <h4 class="text-[3rem] font-bold text-cyan-400 mt-0 mb-0">
+              L2 正则化
+            </h4>
+            <span class="text-[2rem] text-gray-400 ml-auto">(Ridge / 岭回归)</span>
+          </div>
+          <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-6">
+            惩罚所有权重的<strong class="text-cyan-400">平方和</strong>：
+          </p>
+          <div
+            class="text-[2.5rem] text-center mb-8 bg-cyan-900/20 border border-cyan-500/20 py-6 rounded-xl text-cyan-100 font-mono tracking-wider shadow-inner">
+            $$ MSE + \alpha \sum w_j^2 $$
+          </div>
+          <p class="text-[2.2rem] leading-[1.5] text-gray-300">
+            将权重均匀压缩到接近 0 的小值，但<strong class="text-cyan-400">不会恰好等于 0</strong>。表现稳定。
+          </p>
+        </div>
+        <div
+          class="bg-gradient-to-b from-surface to-black/80 p-10 rounded-2xl border border-fuchsia-500/30 shadow-[0_0_40px_rgba(217,70,239,0.1)] transform transition-transform hover:scale-105">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-4 h-12 bg-fuchsia-500 rounded-full"></div>
+            <h4 class="text-[3rem] font-bold text-fuchsia-400 mt-0 mb-0">
+              L1 正则化
+            </h4>
+            <span class="text-[2rem] text-gray-400 ml-auto">(Lasso)</span>
+          </div>
+          <p class="text-[2.2rem] leading-[1.5] text-gray-300 mb-6">
+            惩罚所有权重的<strong class="text-fuchsia-400">绝对值之和</strong>：
+          </p>
+          <div
+            class="text-[2.5rem] text-center mb-8 bg-fuchsia-900/20 border border-fuchsia-500/20 py-6 rounded-xl text-fuchsia-100 font-mono tracking-wider shadow-inner">
+            $$ MSE + \alpha \sum |w_j| $$
+          </div>
+          <p class="text-[2.2rem] leading-[1.5] text-gray-300">
+            将不重要特征的权重直接<strong class="text-fuchsia-400">压缩到 0</strong>，相当于自动进行<strong
+              class="text-fuchsia-400">特征选择</strong>。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 15: 名词溯源：正则化与L1/L2 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="14">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        名词溯源：为什么叫正则化、L1、L2？
+      </h2>
+
+      <div class="grid grid-cols-3 gap-8 w-full mt-8 flex-1 pb-12">
+        <!-- 正则化 -->
+        <div
+          class="bg-surface p-8 rounded-xl border border-gray-800 border-t-[8px] border-t-primary shadow-lg flex flex-col">
+          <h4 class="text-[2.8rem] font-bold text-white mb-6 mt-0 flex items-center gap-3">
+            <span>📏</span> 正则化
+          </h4>
+          <p class="text-[2.2rem] leading-[1.6] text-gray-300 mb-0 flex-1">
+            本意是使事物变得<strong>规则、整齐、正常</strong>。没加正则化时，模型为了迎合噪声会疯狂扭曲（不正常）；加上正则化后，强制让模型“别太极端”，回归到平滑、正常的简单形态。
+          </p>
+        </div>
+
+        <!-- L2 / Ridge -->
+        <div
+          class="bg-surface p-8 rounded-xl border border-gray-800 border-t-[8px] border-t-cyan-500 shadow-lg flex flex-col">
+          <h4 class="text-[2.8rem] font-bold text-cyan-400 mb-6 mt-0 flex items-center gap-3">
+            <span>⛰️</span> L2 (Ridge)
+          </h4>
+          <p class="text-[2.2rem] leading-[1.6] text-gray-300 mb-0 flex-1">
+            没有正则化时，损失函数像一个深邃的峡谷。加上 L2 惩罚后，损失函数的几何形状会在原点附近隆起一道<strong>“山脊 (Ridge)”</strong>，把参数“顶住”，限制在较小范围内，防止它们在峡谷深处失控。
+          </p>
+        </div>
+
+        <!-- L1 / Lasso -->
+        <div
+          class="bg-surface p-8 rounded-xl border border-gray-800 border-t-[8px] border-t-fuchsia-500 shadow-lg flex flex-col">
+          <h4 class="text-[2.8rem] font-bold text-fuchsia-400 mb-6 mt-0 flex items-center gap-3">
+            <span class="flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 22a5 5 0 0 1-2-4" />
+                <path d="M3.3 14A6.8 6.8 0 0 1 2 10c0-4.4 4.5-8 10-8s10 3.6 10 8-4.5 8-10 8a12 12 0 0 1-5-1" />
+                <path d="M5 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+              </svg>
+            </span> L1 (Lasso)
+          </h4>
+          <p class="text-[2.2rem] leading-[1.6] text-gray-300 mb-0 flex-1">
+            <span class="group relative inline-block cursor-help border-b border-dashed border-gray-500">
+              Lasso 是缩写
+              <span
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[400px] bg-gray-800 text-white text-[1.6rem] p-4 rounded-lg shadow-xl z-50 whitespace-normal text-center border border-gray-600">
+                <strong>L</strong>east <strong>A</strong>bsolute <strong>S</strong>hrinkage and
+                <strong>S</strong>election <strong>O</strong>perator<br />
+                <span class="text-gray-400 text-[1.4rem]">(最小绝对值收缩与选择算子)</span>
+              </span>
+            </span>。恰好与英文 <strong>lasso（套索）</strong> 同形，非常形象——它就像牛仔的套索，把不重要的无用特征直接“勒”到 0，天然具备特征选择能力。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 16: 代码实现 - 正则化 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="15">
+      <h2 class="text-[4rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        代码实现：使用正则化解决过拟合
+      </h2>
+      <div class="w-full flex-1 mt-2 rounded-xl bg-[#1e1e1e] border border-gray-700 p-6 custom-scrollbar">
+        <pre><code class="language-python text-[1.8rem] leading-[1.5] font-mono">import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.pipeline import make_pipeline
+
+# 定义模型 (15次多项式)
+degree = 15
+
+# 注意：使用正则化时，务必先进行标准化 (StandardScaler)！
+# 因为高次项的数值会极其庞大，如果不缩放，正则化惩罚会极不公平。
+
+models = {
+    "普通线性回归\n(无正则化, 过拟合)": make_pipeline(
+        PolynomialFeatures(degree), StandardScaler(), LinearRegression()
+    ),
+    "Ridge (L2 正则化)\n(所有权重变小)": make_pipeline(
+        PolynomialFeatures(degree), StandardScaler(), Ridge(alpha=5.0)
+    ),
+    "Lasso (L1 正则化)\n(自带特征选择)": make_pipeline(
+        PolynomialFeatures(degree), StandardScaler(), Lasso(alpha=0.2, max_iter=10000)
+    )
+}
+
+# 训练并获取系数
+for i, (name, model) in enumerate(models.items()):
+    model.fit(X_train, y_train)
+    # 获取最后一步（回归器）的系数 w_j
+    coefs = model.named_steps[model.steps[-1][0]].coef_
+    # 统计绝对值大于极小值的非零系数个数
+    non_zero_count = np.sum(np.abs(coefs) &gt; 1e-5)
+
+    # --- 上半部分：绘制拟合曲线 ---
+    ax_curve = axes[0, i]
+    ax_curve.scatter(X_train, y_train, color='black', s=30, label='训练数据')
+    ax_curve.plot(X_plot, X_plot.ravel()**2, '--', color='gray', label='真实关系 y=x²')
+    ax_curve.plot(X_plot, model.predict(X_plot), color='red', linewidth=2, label='模型预测')
+
+    ax_curve.set_title(name, fontsize=14)
+    ax_curve.set_ylim(-5, 15)
+    ax_curve.legend()
+    ax_curve.grid(True, alpha=0.3)
+
+    # --- 下半部分：绘制模型系数 (w0~w15) ---
+    ax_coef = axes[1, i]
+    # 使用柱状图展示系数大小
+    bars = ax_coef.bar(range(len(coefs)), coefs, color='steelblue')
+
+    # 把等于 0 的系数标为灰色
+    for bar, coef in zip(bars, coefs):
+        if abs(coef) &lt; 1e-5:
+            bar.set_color('lightgray')
+
+    ax_coef.set_title(f"模型系数 w_j 分布\n(非零特征数: {non_zero_count} / {len(coefs)})", fontsize=12)
+    ax_coef.set_xlabel("多项式特征 (从常数项到 $x^{15}$)")
+    ax_coef.set_ylabel("系数值大小")
+    ax_coef.axhline(0, color='black', linewidth=0.8)
+    ax_coef.grid(axis='y', alpha=0.3)
+
+plt.tight_layout()
+plt.show()</code></pre>
+      </div>
+    </div>
+
+    <!-- Slide 17: 正则化效果对比 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="16">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        正则化效果对比
+      </h2>
+      <div class="w-full flex justify-center mb-8 h-[45vh]">
+        <img src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774785207734-fbac21ea-c3fc-4580-bf40-b6e0eb59ff30.png"
+          alt="正则化效果对比" class="h-full object-contain rounded-xl shadow-lg border border-gray-700" />
+      </div>
+      <ul class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] max-w-full list-disc list-inside text-left space-y-4">
+        <li><strong>无正则化</strong>：系数极端，曲线剧烈震荡（过拟合）。</li>
+        <li>
+          <strong>Ridge (L2)</strong>：所有系数被压扁限制在小范围内，曲线平滑。
+        </li>
+        <li>
+          <strong>Lasso (L1)</strong>：大部分系数直接归零，只保留关键特征（自带特征选择）。
+        </li>
+      </ul>
+    </div>
+
+    <!-- Slide 18: 总结与展望 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="17">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        总结与展望
+      </h2>
+
+      <div class="w-full mt-4">
+        <table class="w-full text-left border-collapse text-[2.2rem]">
+          <thead>
+            <tr class="border-b-2 border-gray-700 text-primary">
+              <th class="py-4 px-4 w-1/4">诊断结果</th>
+              <th class="py-4 px-4 w-1/4">核心问题</th>
+              <th class="py-4 px-4 w-1/2">解决方案</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-300">
+            <tr class="border-b border-gray-800 bg-surface/50">
+              <td class="py-4 px-4 font-bold text-white">
+                欠拟合 (Underfitting)
+              </td>
+              <td class="py-4 px-4">模型表达能力不足</td>
+              <td class="py-4 px-4">
+                <strong class="text-primary">➕ 做加法：</strong>增加特征、增加训练轮数、更复杂的模型
+              </td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-4 px-4 font-bold text-white">
+                过拟合 (Overfitting)
+              </td>
+              <td class="py-4 px-4">模型过于敏感、死记硬背</td>
+              <td class="py-4 px-4">
+                <strong class="text-primary">➖ 做减法：</strong>引入正则化、增加数据、简化模型、早停
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Slide 19: 线性回归的重要性 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+      data-index="18">
+      <h2 class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]">
+        线性回归的重要性
+      </h2>
+
+      <div class="bg-surface p-12 rounded-xl w-full mt-8 border border-gray-800">
+        <p class="text-[2.6rem] leading-[1.6] text-gray-300 mb-8">
+          到这里，我们已经掌握了线性回归的大部分核心知识。线性回归是整个机器学习乃至深度学习的<strong>基本原子</strong>：
+        </p>
+        <ul class="text-[2.4rem] leading-[1.8] text-gray-300 list-disc list-inside space-y-6 mb-12 ml-4">
+          <li>
+            <strong>逻辑回归</strong>不过是在线性回归的输出上套了一个激活函数；
+          </li>
+          <li>
+            <strong>深度学习</strong>的本质是将多个线性回归通过非线性函数层层相连；
+          </li>
+          <li>
+            即便是<strong>大语言模型</strong>，其核心运算依然可以理解为多元线性回归的大规模批量处理。
+          </li>
+        </ul>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.2rem] font-semibold mt-8 bg-[#121212] rounded-lg w-full shadow-md block">
+          万变不离其宗，把线性回归真正吃透，后面的学习就是在这个地基上不断叠加新结构。
+        </blockquote>
+      </div>
+    </div>
+
+    <!-- Slide 20: 下一站 -->
+    <div
+      class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]"
+      data-index="19">
+      <div class="mb-12 relative">
+        <div class="absolute -inset-10 bg-primary/20 rounded-full blur-3xl"></div>
+        <svg class="w-48 h-48 text-primary relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+      </div>
+      <h2
+        class="text-[6rem] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-cyan-400 mb-8 text-center leading-[1.2] drop-shadow-lg">
+        下一站：30分钟拿下逻辑回归
+      </h2>
+      <p class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]">
+        从连续值预测到分类问题的跨越 🚀
+      </p>
+    </div>
+  </main>
+
+  <!-- Progress Bar -->
+  <div class="fixed bottom-0 left-0 w-full h-2 bg-gray-800 z-50">
+    <div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
+  </div>
+
+  <!-- Page Number -->
+  <div id="page-number" class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80">
+    1 / 1
+  </div>
+
+  <!-- Image Viewer Overlay -->
+  <div id="image-viewer">
+    <img id="image-viewer-img" src="" alt="Fullscreen Image" />
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize Syntax Highlighting
+      hljs.highlightAll();
+
+      const slides = document.querySelectorAll('.slide-content');
+      const progressBar = document.getElementById('progress-bar');
+      const pageNumber = document.getElementById('page-number');
+      let currentIndex = 0;
+
+      // Image Viewer Logic
+      const imageViewer = document.getElementById('image-viewer');
+      const imageViewerImg = document.getElementById('image-viewer-img');
+      const allImages = document.querySelectorAll('main img');
+
+      allImages.forEach((img) => {
+        img.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent slide navigation if any
+          imageViewerImg.src = img.src;
+          imageViewer.style.display = 'flex';
+          // Trigger reflow for transition
+          void imageViewer.offsetWidth;
+          imageViewer.classList.add('active');
+        });
+      });
+
+      imageViewer.addEventListener('click', () => {
+        imageViewer.classList.remove('active');
+        setTimeout(() => {
+          imageViewer.style.display = 'none';
+        }, 300); // Match transition duration
+      });
+
+      function updateSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= slides.length) index = slides.length - 1;
+
+        currentIndex = index;
+
+        // Update visibility
+        slides.forEach((slide, i) => {
+          if (i === currentIndex) {
+            slide.classList.add('active');
+          } else {
+            slide.classList.remove('active');
+          }
+        });
+
+        // Update progress bar
+        const progress = ((currentIndex + 1) / slides.length) * 100;
+        progressBar.style.width = `${progress}%`;
+
+        // Update page number
+        pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+
+        // Update URL hash
+        window.location.hash = `#${currentIndex + 1}`;
+      }
+
+      // Keyboard Navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+          updateSlide(currentIndex + 1);
+        } else if (e.key === 'ArrowLeft') {
+          updateSlide(currentIndex - 1);
+        }
+      });
+
+      // Initialize from URL hash
+      const hash = window.location.hash;
+      let initialIndex = 0;
+      if (hash) {
+        const page = parseInt(hash.substring(1), 10);
+        if (!isNaN(page)) {
+          initialIndex = page - 1;
+        }
+      }
+      updateSlide(initialIndex);
+
+      // Handle hash change (e.g. browser back button)
+      window.addEventListener('hashchange', () => {
+        const hash = window.location.hash;
+        if (hash) {
+          const page = parseInt(hash.substring(1), 10);
+          if (!isNaN(page)) {
+            updateSlide(page - 1);
+          }
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
