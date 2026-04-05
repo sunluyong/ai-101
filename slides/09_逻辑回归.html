@@ -1,0 +1,1394 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>逻辑回归 - AI Course Slides</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#3ECF8E', // Supabase Green
+              bg: '#121212', // Supabase Dark BG
+              surface: '#1C1C1C', // Darker Surface
+              text: '#EDEDED', // Off-white text
+              muted: '#A1A1A1', // Muted text
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- MathJax Configuration -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ['$', '$'],
+            ['\\(', '\\)'],
+          ],
+          displayMath: [
+            ['$$', '$$'],
+            ['\\[', '\\]'],
+          ],
+          processEscapes: true,
+        },
+        svg: {
+          fontCache: 'global',
+        },
+      };
+    </script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+
+    <!-- Highlight.js Configuration -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll();
+    </script>
+
+    <style>
+      /* Custom scrollbar hide */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+
+      body {
+        background-color: #121212;
+        color: #ededed;
+        overflow: hidden;
+        font-size: 2.4em;
+      }
+
+      /* Slide Transition Logic */
+      .slide-content {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        pointer-events: none;
+      }
+
+      .slide-content.active {
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 10;
+      }
+
+      /* Strong Highlight */
+      strong {
+        color: #3ecf8e;
+        font-weight: 700;
+      }
+
+      /* Image Viewer */
+      img {
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      img:hover {
+        transform: scale(1.02);
+      }
+      #image-viewer {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      #image-viewer.active {
+        display: flex;
+        opacity: 1;
+      }
+      #image-viewer img {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+        cursor: zoom-out;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+      }
+      #image-viewer.active img {
+        transform: scale(1);
+      }
+
+      /* Code block styling */
+      pre {
+        background-color: #1e1e1e !important;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        overflow-y: auto;
+        max-height: 60vh;
+        width: 100%;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      pre code {
+        font-family: 'Fira Code', 'Consolas', monospace;
+        font-size: 1.6rem;
+        line-height: 1.5;
+      }
+
+      /* Show scrollbar for code blocks */
+      pre::-webkit-scrollbar {
+        display: block;
+        width: 8px;
+        height: 8px;
+      }
+      pre::-webkit-scrollbar-track {
+        background: #1e1e1e;
+        border-radius: 4px;
+      }
+      pre::-webkit-scrollbar-thumb {
+        background: #3ecf8e;
+        border-radius: 4px;
+      }
+      pre::-webkit-scrollbar-thumb:hover {
+        background: #2fb379;
+      }
+
+      /* MathJax Spacing */
+      mjx-container[display='true'] {
+        margin: 0.2em 0 !important;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-bg text-white h-screen w-screen overflow-hidden relative selection:bg-primary selection:text-black"
+  >
+    <!-- Slides Container -->
+    <main id="slides-container" class="w-full h-full relative">
+      <!-- Slide 1: Title -->
+      <div
+        class="slide-content active absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-center p-[3rem_8rem] bg-[radial-gradient(circle_at_center,#1a1a1a_0%,#121212_70%)]"
+        data-index="0"
+      >
+        <div
+          class="mb-10 flex items-center gap-6 text-5xl font-mono tracking-widest uppercase text-muted"
+        >
+          <span class="text-primary font-bold">人工智能通识</span>
+          <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+          <span class="text-gray-300">机器学习</span>
+        </div>
+        <div class="mb-12 relative">
+          <div
+            class="absolute -inset-10 bg-primary/10 rounded-full blur-3xl"
+          ></div>
+          <svg
+            class="w-48 h-48 text-primary relative z-10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="M3 19c6 0 6-14 18-14" />
+            <circle cx="7" cy="19" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="10" cy="18" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="14" cy="6" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="18" cy="5" r="1.5" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
+        <h1
+          class="text-[7rem] font-extrabold text-text mb-8 text-center [text-shadow:0_0_40px_rgba(62,207,142,0.1)] leading-[1.1]"
+        >
+          逻辑回归
+        </h1>
+        <p
+          class="text-[3rem] text-muted text-center max-w-[80%] font-light leading-[1.5]"
+        >
+          从预测数值到预测类别的跨越
+        </p>
+      </div>
+
+      <!-- Slide 2: 什么是分类问题 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="1"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          一、什么是分类问题
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          线性回归能预测房价、股票价格这样的<strong>连续数值</strong>。但现实业务中，有大量的问题本质上是在做选择题：
+        </p>
+        <ul
+          class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-10 max-w-full list-disc list-inside text-left space-y-6"
+        >
+          <li>这封邮件是不是垃圾邮件？</li>
+          <li>这个肿瘤是良性还是恶性？</li>
+          <li>用户会不会点击广告？</li>
+        </ul>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          我们把预测离散标签、输出有限个互斥类别的任务称为<strong>分类（Classification）</strong>。
+        </p>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-12 bg-surface rounded-lg w-full shadow-md block"
+        >
+          一句话总结：线性回归解决<strong>是多少</strong>的问题，逻辑回归解决<strong>属于哪一类</strong>的问题。
+        </blockquote>
+      </div>
+
+      <!-- Slide 3: 为什么需要逻辑回归 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="2"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          二、为什么需要逻辑回归
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          为什么不能直接用线性回归预测，大于 0.5 算 1、小于 0.5 算 0？<br />
+          使用线性回归处理分类任务主要有两个致命缺陷：
+        </p>
+        <div class="grid grid-cols-2 gap-12 w-full mt-8">
+          <div class="bg-surface p-10 rounded-xl border border-gray-800">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+              1. 输出范围失控
+            </h3>
+            <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4]">
+              线性回归的输出是 $ (-\infty,+\infty)
+              $。在分类问题中我们希望输出是一个概率，必须在
+              <strong>(0, 1)</strong> 之间。预测结果是 10000 或者 -50 毫无意义。
+            </p>
+          </div>
+          <div class="bg-surface p-10 rounded-xl border border-gray-800">
+            <h3 class="text-[2.5rem] font-semibold text-primary mb-6 mt-0">
+              2. 极易受异常值影响
+            </h3>
+            <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4]">
+              假设数据里多了一个极其巨大的异常样本，整条回归线就会被严重拉偏，导致原本预测准确的普通样本被错误分类。
+            </p>
+          </div>
+        </div>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-primary mt-12 font-bold max-w-full text-left"
+        >
+          💡 解决方案：为线性回归叠加一个变形器——这就是逻辑回归。
+        </p>
+      </div>
+
+      <!-- Slide 4: Sigmoid 函数 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="3"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          三、Sigmoid 函数
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          为了将任意实数映射到 0 到 1 之间的概率值，逻辑回归引入了
+          <strong>Sigmoid 函数</strong>：
+        </p>
+        <div class="flex items-center justify-between w-full gap-12">
+          <div class="w-1/2">
+            <div
+              class="bg-surface py-4 px-8 rounded-xl border border-gray-800 mb-6 text-center"
+            >
+              <span class="text-[3rem]"
+                >$$ \sigma(z) = \frac{1}{1 + e^{-z}} $$</span
+              >
+            </div>
+            <p class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4">
+              把线性回归结果 $ z=wx+b $ 套入公式：
+            </p>
+            <div
+              class="bg-surface py-4 px-8 rounded-xl border border-gray-800 text-center"
+            >
+              <span class="text-[3rem]"
+                >$$ \hat{y} = \frac{1}{1 + e^{-(wx + b)}} $$</span
+              >
+            </div>
+          </div>
+          <div class="w-1/2 flex justify-center">
+            <img
+              src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774876531350-d578c48b-60c4-4379-832f-685bfc47e532.png"
+              class="rounded-lg shadow-lg max-h-[400px]"
+              alt="Sigmoid Function"
+            />
+          </div>
+        </div>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.6rem] font-semibold my-8 bg-surface rounded-lg w-full shadow-md block"
+        >
+          逻辑回归 = 线性回归 + Sigmoid。前半段算分数，Sigmoid 把分数转成概率。
+        </blockquote>
+      </div>
+
+      <!-- Slide 5: 为什么偏爱 Sigmoid？ -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="4"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          为什么偏爱 Sigmoid？
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          它完美契合了分类任务的三个核心需求：
+        </p>
+        <div class="flex flex-col gap-6 w-full">
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 flex items-center gap-8"
+          >
+            <div class="text-primary text-5xl font-bold w-16 text-center">
+              1
+            </div>
+            <div>
+              <h3 class="text-[2.2rem] font-semibold text-white mb-2 mt-0">
+                输出天然具有概率含义
+              </h3>
+              <p class="text-[2rem] text-muted m-0">
+                严格限制在 $ (0, 1) $ 之间，0.8 就代表模型有 80%
+                的把握认为是正类。
+              </p>
+            </div>
+          </div>
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 flex items-center gap-8"
+          >
+            <div class="text-primary text-5xl font-bold w-16 text-center">
+              2
+            </div>
+            <div>
+              <h3 class="text-[2.2rem] font-semibold text-white mb-2 mt-0">
+                自带决策分界点
+              </h3>
+              <p class="text-[2rem] text-muted m-0">
+                $ \sigma(0) = 0.5 $。$ wx + b > 0 $ 判为正类，$ wx + b < 0 $
+                判为负类。决策边界就是 $ wx + b = 0 $。
+              </p>
+            </div>
+          </div>
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 flex items-center gap-8"
+          >
+            <div class="text-primary text-5xl font-bold w-16 text-center">
+              3
+            </div>
+            <div class="flex-1">
+              <h3 class="text-[2.2rem] font-semibold text-white mb-2 mt-0">
+                处处可导，且导数极简
+              </h3>
+              <p class="text-[2rem] text-muted m-0">
+                相比阶跃函数，Sigmoid 连续平滑，导数公式极其简洁：$ \sigma'(z) =
+                \sigma(z) \cdot (1 - \sigma(z)) $，极大提升梯度下降效率。
+              </p>
+            </div>
+            <img
+              src="https://cdn.nlark.com/yuque/0/2026/png/87727/1774877481395-b1ae1390-fff7-4285-9911-e19884a0a232.png"
+              class="h-24 rounded bg-white p-1"
+              alt="Step vs Sigmoid"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6: 逻辑回归为什么不使用 MSE -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="5"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          四、为什么不使用 MSE？
+        </h2>
+        <div class="flex gap-12 w-full h-full">
+          <div class="w-1/2 flex flex-col gap-6">
+            <div class="bg-surface p-6 rounded-xl border border-gray-800">
+              <h3 class="text-[2.2rem] font-semibold text-primary mb-2 mt-0">
+                线性回归 + MSE = 凸函数
+              </h3>
+              <p class="text-[2rem] text-muted mb-4">
+                像一个光滑的碗，无论初始参数怎么设置，梯度下降都能找到全局最优解。
+              </p>
+              <img
+                src="https://cdn.nlark.com/yuque/0/2026/png/87727/1775307833913-e73b356b-01b1-48a5-8566-b8fa86611807.png"
+                class="w-full rounded"
+                alt="Convex Function"
+              />
+            </div>
+          </div>
+          <div class="w-1/2 flex flex-col gap-6">
+            <div class="bg-surface p-6 rounded-xl border border-gray-800">
+              <h3 class="text-[2.2rem] font-semibold text-red-400 mb-2 mt-0">
+                逻辑回归 + MSE = 非凸函数
+              </h3>
+              <p class="text-[2rem] text-muted mb-4">
+                引入非线性的 Sigmoid
+                后，损失函数变得坑坑洼洼，极易陷入<strong>局部最优</strong>，且存在<strong>梯度消失</strong>问题。
+              </p>
+              <img
+                src="https://cdn.nlark.com/yuque/0/2026/png/87727/1775308594230-e032597d-5e68-48fe-86ec-1e8dc3eeaa5f.png"
+                class="w-full rounded"
+                alt="Non-convex Function"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 7: 分类问题损失的特征 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="6"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          分类问题损失的特征
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          对于二分类任务，模型输出的是概率 p。一个合理的损失函数应该满足：
+        </p>
+        <ul
+          class="text-[2.4rem] leading-[1.6] text-[#D4D4D4] mb-8 max-w-full list-disc list-inside text-left space-y-4"
+        >
+          <li>
+            如果真实标签 <strong>y=1</strong>，那么 p 越接近 1 越好，越接近 0
+            惩罚越大。
+          </li>
+          <li>
+            如果真实标签 <strong>y=0</strong>，那么 p 越接近 0 越好，越接近 1
+            惩罚越大。
+          </li>
+        </ul>
+        <blockquote
+          class="border-l-[8px] border-red-500 p-[2rem_3rem] not-italic text-text text-[2.4rem] font-semibold my-8 bg-surface rounded-lg w-full shadow-md block"
+        >
+          ⚠️ 常见误区：p=0.5 并不是损失最大，而是模型最不确定。<br />
+          真正损失最大的时候，是<strong>模型非常自信但预测错了</strong>（如真实
+          y=1，却预测 p≈0）。
+        </blockquote>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mt-4 max-w-full text-left"
+        >
+          为了设计这样的函数，我们借用数学工具：<strong>对数函数 (log)</strong
+          >、<strong>伯努利分布</strong> 和 <strong>最大似然估计</strong>。
+        </p>
+      </div>
+
+      <!-- Slide 8: 基础工具：对数函数 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="7"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          基础工具：对数函数 (Logarithm)
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 max-w-full text-left"
+        >
+          在推导损失函数时，我们为什么要引入对数 $\log$？
+        </p>
+        <div class="flex gap-12 w-full h-[55%] mt-2">
+          <div class="w-[55%] flex flex-col gap-6">
+            <div class="bg-surface p-6 rounded-xl border border-gray-800">
+              <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+                1. 单调性保持一致
+              </h3>
+              <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4]">
+                对数函数是严格单调递增的。<strong>最大化某个概率，完全等价于最大化它的对数</strong>。这让优化过程变得简单。
+              </p>
+            </div>
+            <div class="bg-surface p-6 rounded-xl border border-gray-800">
+              <h3 class="text-[2.5rem] font-semibold text-primary mb-4 mt-0">
+                2. 防止数值下溢出
+              </h3>
+              <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4]">
+                多个介于 0 和 1 之间的概率相乘，结果会迅速趋近于
+                0，导致计算机无法精确表示。取对数后，<strong>乘法变成了加法</strong>：$\log(a
+                \times b) = \log(a) + \log(b)$。
+              </p>
+            </div>
+          </div>
+          <div class="w-[45%] flex flex-col items-center justify-center">
+            <img
+              src="https://cdn.nlark.com/yuque/0/2026/png/87727/1775306981730-483d84d1-e2eb-4507-afc7-e15a3a0ee6f9.png"
+              class="rounded-xl shadow-lg bg-white p-2 max-h-[80%] object-contain"
+              alt="Logarithm Function Curve"
+            />
+            <blockquote
+              class="p-3 not-italic text-text text-[2rem] font-semibold mt-8 bg-surface rounded-lg w-full shadow-md block"
+            >
+              💡 观察 $y = -\log(x)$ 在 (0, 1) 的图像：<br />当 $x \to 1$ 时 $y
+              \to 0$<br />当 $x \to 0$ 时 $y \to +\infty$<br />这完美符合我们对“惩罚”的定义！
+            </blockquote>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 9: 基础工具：伯努利分布 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="8"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-4 text-left w-full leading-[1.2]"
+        >
+          基础工具：伯努利分布
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          二分类问题的本质，就是一个只有两种结果的随机试验（比如抛不均匀的硬币）。
+        </p>
+
+        <div class="flex gap-10 w-full">
+          <!-- Left: Bernoulli -->
+          <div
+            class="w-1/2 bg-surface p-8 rounded-xl border border-gray-800 flex flex-col"
+          >
+            <h3 class="text-[2.6rem] font-semibold text-white mb-6 mt-0">
+              1. 统一概率公式
+            </h3>
+            <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-4">
+              假设结果为 1 的概率是 $p$，结果为 0 的概率是 $1-p$：
+            </p>
+            <div class="text-center mb-6 flex flex-col gap-2">
+              <span class="text-[2.6rem] text-white">$$ P(y=1) = p $$</span>
+              <span class="text-[2.6rem] text-white">$$ P(y=0) = 1-p $$</span>
+            </div>
+            <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-4">
+              数学家巧妙地用一个公式把两种情况统一了起来：
+            </p>
+            <div class="text-center">
+              <span class="text-[3.2rem] text-white"
+                >$$ P(y) = p^y (1-p)^{1-y} $$</span
+              >
+            </div>
+          </div>
+
+          <!-- Right: Logistic Regression Link -->
+          <div
+            class="w-1/2 bg-surface p-8 rounded-xl border border-primary/30 flex flex-col shadow-[0_0_20px_rgba(62,207,142,0.1)]"
+          >
+            <h3 class="text-[2.6rem] font-semibold text-primary mb-6 mt-0">
+              2. 结合逻辑回归
+            </h3>
+            <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-4">
+              在逻辑回归中，模型预测的 $\hat{y}$ 正是样本属于正类 ($y=1$) 的概率
+              $p$：
+            </p>
+            <div class="text-center mb-6">
+              <span class="text-[2.6rem] text-primary"
+                >$$ p = \hat{y} = \frac{1}{1 + e^{-(wx+b)}} $$</span
+              >
+            </div>
+            <p class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-4">
+              将 $\hat{y}$ 代入伯努利分布，得到单个样本预测正确的概率表示：
+            </p>
+            <div class="text-center">
+              <span class="text-[3.2rem] text-primary"
+                >$$ P(y|x) = \hat{y}^y (1-\hat{y})^{1-y} $$</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 10: 最大似然估计 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="9"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          核心思想：最大似然估计 (MLE)
+        </h2>
+        <div
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-4 max-w-full text-left"
+        >
+          最大<span
+            class="relative group cursor-help text-primary border-b-2 border-dashed border-primary transition-colors hover:bg-primary/20"
+            >似然
+            <div
+              class="absolute top-full left-0 mt-4 hidden group-hover:block w-[830px] p-6 bg-gray-800 text-white text-[2rem] rounded-xl shadow-2xl z-50 border border-gray-600 leading-relaxed font-normal text-left"
+            >
+              <strong class="text-primary">● 概率 (Probability)</strong>
+              是在已知模型参数的情况下，预测未知数据出现的可能性。<br /><span
+                class="text-gray-400 text-[1.8rem]"
+                >例：已知我们先假设这枚硬币是均匀的，即正面朝上的概率 p =
+                0.5。那么连续抛10次，恰好出现7次正面的概率是多少？</span
+              >
+              <hr class="my-3 border-gray-700" />
+              <strong class="text-primary">● 似然 (Likelihood)</strong>
+              是在已知观测数据的情况下，评估未知模型参数的合理性。<br /><span
+                class="text-gray-400 text-[1.8rem]"
+                >例：已知我们实际抛了10次硬币，观测到了7次正面和3次反面这个结果。在这个观测结果下，硬币正面朝上的概率
+                p 等于多少最合理？</span
+              >
+            </div></span
+          >估计：<strong
+            >既然事情已经发生，那么让这件事情发生的概率最大的参数，就是最好的参数。</strong
+          ><br />
+          <span class="font-semibold mt-2 inline-block"
+            >我们要找到一组参数
+            $\theta$，使得这组数据出现的似然函数值最大。</span
+          >
+        </div>
+        <div class="flex gap-8 w-full mb-6">
+          <div
+            class="w-2/5 bg-surface p-6 rounded-xl border border-gray-800 flex flex-col"
+          >
+            <div class="text-[2.4rem] text-white font-semibold mb-2">
+              1. 似然函数
+            </div>
+            <p class="text-[2.2rem] text-[#D4D4D4] mb-4">
+              所有样本预测正确的概率乘积。
+            </p>
+            <div class="text-center mt-auto">
+              <span class="text-[2.4rem] text-primary"
+                >$$ L(\theta) = \prod_{i=1}^m \hat{y}_i^{y_i}
+                (1-\hat{y}_i)^{1-y_i} $$</span
+              >
+            </div>
+          </div>
+          <div
+            class="w-3/5 bg-surface p-6 rounded-xl border border-gray-800 flex flex-col"
+          >
+            <div class="text-[2.4rem] text-white font-semibold mb-2">
+              2. 取对数 (Log-Likelihood)
+            </div>
+            <p class="text-[2.2rem] text-[#D4D4D4] mb-4">
+              将连乘变为连加，方便求导。
+            </p>
+            <div class="text-center mt-auto">
+              <span class="text-[2.4rem] text-primary"
+                >$$ \log L(\theta) = \sum_{i=1}^m \left[ y_i \log(\hat{y}_i) +
+                (1-y_i) \log(1-\hat{y}_i) \right] $$</span
+              >
+            </div>
+          </div>
+        </div>
+        <blockquote
+          class="mt-4 border-l-[8px] border-primary py-4 px-6 not-italic text-text text-[2.2rem] font-semibold bg-surface rounded-lg w-full shadow-md block"
+        >
+          💡
+          在统计学中希望<strong>最大化</strong>似然函数，但在机器学习中需要<strong>最小化</strong>损失函数。因此只需在前面加个负号并求平均，这就得到了<strong>交叉熵损失函数</strong>！
+        </blockquote>
+      </div>
+
+      <!-- Slide 11: 交叉熵损失 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="10"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          交叉熵损失 (Cross-Entropy Loss)
+        </h2>
+        <div
+          class="bg-surface py-4 px-8 rounded-xl border border-gray-800 text-center w-full mb-8"
+        >
+          <span class="text-[3.5rem] text-primary"
+            >$$ J(\theta) = - \frac{1}{m} \sum_{i=1}^m \left[ y_i \log(\hat{y})
+            + (1-y_i) \log(1-\hat{y}) \right] $$</span
+          >
+        </div>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          公式看着长，但逻辑很简单：因为真实标签 $ y $ 要么是 0 要么是
+          1，所以永远<strong>只有一项在起作用</strong>。
+        </p>
+        <table class="w-full text-left border-collapse mt-4">
+          <thead>
+            <tr class="border-b-2 border-gray-700 text-[2.2rem] text-primary">
+              <th class="py-4 px-6">真实标签</th>
+              <th class="py-4 px-6">损失项</th>
+              <th class="py-4 px-6">含义</th>
+            </tr>
+          </thead>
+          <tbody class="text-[2rem] text-gray-300">
+            <tr class="border-b border-gray-800">
+              <td class="py-4 px-6 font-mono">y = 1</td>
+              <td class="py-4 px-6 font-mono">$-\log(\hat y)$</td>
+              <td class="py-4 px-6">
+                预测概率越接近 1，损失越小；接近 0 时损失 $\to +\infty$
+              </td>
+            </tr>
+            <tr class="border-b border-gray-800">
+              <td class="py-4 px-6 font-mono">y = 0</td>
+              <td class="py-4 px-6 font-mono">$-\log(1-\hat y)$</td>
+              <td class="py-4 px-6">
+                预测概率越接近 0，损失越小；接近 1 时损失 $\to +\infty$
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-[2rem] text-muted mt-8 text-center w-full">
+          交叉熵是一个严格的凸函数，无论初始权重在哪里，都能引导模型快速且稳定地收敛到全局最优点。
+        </p>
+      </div>
+
+      <!-- Slide 12: 梯度下降 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="11"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          五、梯度下降
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-12 max-w-full text-left"
+        >
+          逻辑回归的梯度推导过程中，Sigmoid
+          的导数和交叉熵的导数恰好大量约分抵消，最终结果<strong>和线性回归的形式一模一样</strong>！
+        </p>
+
+        <div class="w-full flex justify-center">
+          <table
+            class="w-[90%] text-center border-collapse bg-surface rounded-xl overflow-hidden shadow-lg"
+          >
+            <thead>
+              <tr class="bg-gray-800 text-[2.4rem] text-primary">
+                <th class="py-6 px-6 border-r border-gray-700"></th>
+                <th class="py-6 px-6 border-r border-gray-700">线性回归</th>
+                <th class="py-6 px-6">逻辑回归</th>
+              </tr>
+            </thead>
+            <tbody class="text-[2.4rem] text-gray-200">
+              <tr class="border-b border-gray-700">
+                <td
+                  class="py-6 px-6 border-r border-gray-700 font-bold text-white"
+                >
+                  权重梯度
+                </td>
+                <td class="py-6 px-6 border-r border-gray-700">
+                  $$ \frac{1}{m}\sum(\hat{y}-y) \cdot x_j $$
+                </td>
+                <td class="py-6 px-6">
+                  $$ \frac{1}{m}\sum(\hat{y}-y) \cdot x_j $$
+                </td>
+              </tr>
+              <tr class="border-b border-gray-700">
+                <td
+                  class="py-6 px-6 border-r border-gray-700 font-bold text-white"
+                >
+                  偏置梯度
+                </td>
+                <td class="py-6 px-6 border-r border-gray-700">
+                  $$ \frac{1}{m}\sum(\hat{y}-y) $$
+                </td>
+                <td class="py-6 px-6">$$ \frac{1}{m}\sum(\hat{y}-y) $$</td>
+              </tr>
+              <tr class="bg-gray-900/50">
+                <td
+                  class="py-6 px-6 border-r border-gray-700 font-bold text-primary"
+                >
+                  $\hat y$ 含义
+                </td>
+                <td class="py-6 px-6 border-r border-gray-700 font-mono">
+                  $ wx+b $
+                </td>
+                <td class="py-6 px-6 font-mono text-primary">
+                  $ sigmoid(wx + b) $
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Slide 13: 实战：逻辑回归分类乳腺癌 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="12"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          六、实战：乳腺癌数据集
+        </h2>
+        <p
+          class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          使用 scikit-learn 内置数据集演示完整训练流程。目标：二分类——恶性（0）/
+          良性（1）。
+        </p>
+        <div class="flex gap-8 w-full h-[60%]">
+          <div class="w-1/2 h-full">
+            <pre
+              class="h-full"
+            ><code class="language-python">from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+
+# 1. 划分训练集 / 测试集
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, stratify=y
+)
+
+# 2. 特征标准化（逻辑回归对量纲敏感）
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled  = scaler.transform(X_test)
+
+# 3. 训练逻辑回归模型
+model = LogisticRegression()
+model.fit(X_train_scaled, y_train)
+
+print(f'测试集准确率：{model.score(X_test_scaled, y_test):.4f}')
+# 输出: 测试集准确率：0.9825</code></pre>
+          </div>
+          <div class="w-1/2 flex flex-col gap-6">
+            <div
+              class="bg-surface p-6 rounded-xl border border-gray-800 h-full"
+            >
+              <h3 class="text-[2.4rem] font-semibold text-primary mb-4 mt-0">
+                结果分析
+              </h3>
+              <ul
+                class="text-[2rem] leading-[1.6] text-[#D4D4D4] list-disc list-inside space-y-4"
+              >
+                <li>数据集共 569 个样本、30 个特征。</li>
+                <li>
+                  特征值量级差异很大，<strong>必须标准化</strong>后再训练。
+                </li>
+                <li>
+                  测试集准确率高达
+                  <strong>98.25%</strong>，模型具备良好的泛化能力。
+                </li>
+                <li>说明乳腺癌特征与标签之间存在较强的线性可分性。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 14: 预测概率分布可视化 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="13"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          预测概率分布可视化
+        </h2>
+        <p
+          class="text-[2.2rem] leading-[1.5] text-[#D4D4D4] mb-6 max-w-full text-left"
+        >
+          逻辑回归不仅输出类别预测，还会给出每个样本属于某类别的概率值 $ \hat{p}
+          \in [0, 1] $。
+        </p>
+        <div class="flex flex-col items-center w-full">
+          <img
+            src="https://cdn.nlark.com/yuque/0/2026/png/87727/1775317201583-8ac3684a-ad38-4146-a299-e33f55d35e18.png"
+            class="rounded-xl shadow-lg max-h-[450px] bg-white p-4"
+            alt="Probability Distribution"
+          />
+          <div
+            class="mt-8 bg-surface p-6 rounded-xl border border-gray-800 w-full"
+          >
+            <p class="text-[2rem] leading-[1.5] text-gray-300 m-0">
+              📌 <strong>红色（恶性）</strong>集中在 0
+              附近，<strong>蓝色（良性）</strong>集中在 1 附近。<br />
+              两组分布几乎不重叠，中间极少数样本落在决策边界（p=0.5）附近，说明模型区分能力很强。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 15: 模型评估指标 - 混淆矩阵 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="14"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          七、模型评估：混淆矩阵
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-10 max-w-full text-left"
+        >
+          分类任务不能只看准确率。混淆矩阵把所有预测结果按「真实类别 ×
+          预测类别」排列，是分类评估的基础。
+        </p>
+        <div class="flex gap-16 w-full items-center justify-center">
+          <div class="w-[55%]">
+            <table
+              class="w-full text-center border-collapse bg-surface rounded-2xl overflow-hidden shadow-2xl border border-gray-800"
+            >
+              <thead>
+                <tr class="bg-gray-800/80 text-[2.4rem] text-white">
+                  <th
+                    class="py-6 px-6 border-r border-b border-gray-700 w-1/3"
+                  ></th>
+                  <th class="py-6 px-6 border-r border-b border-gray-700 w-1/3">
+                    预测为正
+                  </th>
+                  <th class="py-6 px-6 border-b border-gray-700 w-1/3">
+                    预测为负
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="text-[2.4rem]">
+                <tr class="border-b border-gray-700">
+                  <td
+                    class="py-8 px-6 border-r border-gray-700 font-bold bg-gray-800/50 text-white"
+                  >
+                    实际为正
+                  </td>
+                  <td
+                    class="py-8 px-6 border-r border-gray-700 text-primary bg-primary/5 font-semibold"
+                  >
+                    TP (真正例) ✅
+                  </td>
+                  <td class="py-8 px-6 text-red-400 bg-red-500/5 font-semibold">
+                    FN (假负例)<br /><span class="text-[1.8rem] opacity-80"
+                      >❌ 漏报</span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    class="py-8 px-6 border-r border-gray-700 font-bold bg-gray-800/50 text-white"
+                  >
+                    实际为负
+                  </td>
+                  <td
+                    class="py-8 px-6 border-r border-gray-700 text-orange-400 bg-orange-500/5 font-semibold"
+                  >
+                    FP (假正例)<br /><span class="text-[1.8rem] opacity-80"
+                      >❌ 误报</span
+                    >
+                  </td>
+                  <td class="py-8 px-6 text-primary bg-primary/5 font-semibold">
+                    TN (真负例) ✅
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="w-[45%] flex flex-col items-center">
+            <div class="bg-white p-4 rounded-2xl shadow-xl mb-6">
+              <img
+                src="https://cdn.nlark.com/yuque/0/2026/png/87727/1775317757050-8c170ff8-b8df-4227-bdf5-34663fdbe572.png"
+                class="max-h-[350px] object-contain"
+                alt="Confusion Matrix"
+              />
+            </div>
+            <div
+              class="bg-red-500/10 border border-red-500/30 p-6 rounded-xl w-full"
+            >
+              <p class="text-[2rem] text-red-200 m-0 leading-[1.5]">
+                ⚠️
+                <strong>FN（漏报恶性）</strong
+                >在医疗场景中危害最大，患者可能因此延误治疗。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 16: 精确率、召回率、F1 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="15"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          精确率、召回率、F1
+        </h2>
+        <p
+          class="text-[2.4rem] leading-[1.5] text-[#D4D4D4] mb-8 max-w-full text-left"
+        >
+          从混淆矩阵推导出三个核心指标：
+        </p>
+        <div class="grid grid-cols-3 gap-8 w-full mb-8">
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 text-center"
+          >
+            <h3 class="text-[2.4rem] font-bold text-white mb-4 mt-0">
+              精确率 (Precision)
+            </h3>
+            <div class="text-[2.2rem] text-primary mb-4">
+              $$ \frac{TP}{TP + FP} $$
+            </div>
+            <p class="text-[1.8rem] text-muted">
+              预测为正类的样本中，真正是正类的比例（预测质量）
+            </p>
+          </div>
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 text-center"
+          >
+            <h3 class="text-[2.4rem] font-bold text-white mb-4 mt-0">
+              召回率 (Recall)
+            </h3>
+            <div class="text-[2.2rem] text-primary mb-4">
+              $$ \frac{TP}{TP + FN} $$
+            </div>
+            <p class="text-[1.8rem] text-muted">
+              所有真正的正类中，被成功预测出来的比例（覆盖能力）
+            </p>
+          </div>
+          <div
+            class="bg-surface p-6 rounded-xl border border-gray-800 text-center"
+          >
+            <h3 class="text-[2.4rem] font-bold text-white mb-4 mt-0">
+              F1 Score
+            </h3>
+            <div class="text-[2.2rem] text-primary mb-4">
+              $$ 2 \times \frac{P \times R}{P + R} $$
+            </div>
+            <p class="text-[1.8rem] text-muted">
+              精确率和召回率的调和平均，两者都高，F1 才高
+            </p>
+          </div>
+        </div>
+        <blockquote
+          class="border-l-[8px] border-primary p-[2rem_3rem] not-italic text-text text-[2.2rem] font-semibold bg-surface rounded-lg w-full shadow-md block"
+        >
+          💡
+          <strong>权衡：</strong
+          >降低决策阈值可以提高召回率（漏报更少），但会降低精确率（误报更多）。在乳腺癌场景中，恶性的召回率是最重要的——宁可误报，不能漏报。
+        </blockquote>
+      </div>
+
+      <!-- Slide 17: ROC 曲线与 AUC -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="16"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          ROC 曲线与 AUC
+        </h2>
+        <div class="flex gap-12 w-full items-center">
+          <div class="w-1/2">
+            <p class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] mb-6">
+              精确率/召回率依赖于决策阈值。<strong>ROC 曲线</strong
+              >通过遍历所有阈值，完整展示模型表现：
+            </p>
+            <ul
+              class="text-[2rem] leading-[1.6] text-[#D4D4D4] list-disc list-inside space-y-4 mb-6"
+            >
+              <li>
+                <strong>横轴 (FPR)</strong>：假正率，负类被误判为正类的比例
+              </li>
+              <li>
+                <strong>纵轴 (TPR)</strong>：真正率
+                (召回率)，正类被正确识别的比例
+              </li>
+            </ul>
+            <div class="bg-surface p-6 rounded-xl border border-gray-800">
+              <h3 class="text-[2.2rem] font-bold text-primary mb-2 mt-0">
+                AUC (Area Under Curve)
+              </h3>
+              <p class="text-[2rem] text-muted m-0">
+                ROC 曲线下面积，取值 0~1。AUC
+                越大，模型区分正负类的能力越强，且<strong>与阈值无关</strong>，适合模型间横向对比。
+              </p>
+            </div>
+          </div>
+          <div class="w-1/2 flex justify-center">
+            <img
+              src="https://cdn.nlark.com/yuque/0/2026/png/87727/1775317943423-3a453abb-288b-4dd8-8269-fdc09dc89dc3.png"
+              class="rounded-xl shadow-lg bg-white p-4 max-h-[450px]"
+              alt="ROC Curve"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 18: 多分类与深度学习 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="17"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-4 text-left w-full leading-[1.2]"
+        >
+          八、多分类与深度学习
+        </h2>
+
+        <div class="flex gap-8 w-full mt-2">
+          <div class="w-1/2 flex flex-col gap-4">
+            <div
+              class="bg-surface p-6 rounded-xl border border-gray-800 h-full"
+            >
+              <h3 class="text-[2.4rem] font-semibold text-primary mb-3 mt-0">
+                多分类进阶：Softmax
+              </h3>
+              <p class="text-[2rem] leading-[1.5] text-[#D4D4D4] mb-4">
+                逻辑回归（Sigmoid）解决的是<strong>非黑即白</strong>的二分类问题。如果面临多个类别（如猫、狗、猪），我们需要升级为
+                <strong>Softmax 回归</strong>：
+              </p>
+              <ul
+                class="text-[2rem] leading-[1.5] text-[#D4D4D4] list-disc list-inside space-y-3"
+              >
+                <li>为每个类别计算一个独立得分。</li>
+                <li>
+                  通过 Softmax 函数，将所有得分转化为<strong>概率分布</strong>。
+                </li>
+                <li>所有类别的概率<strong>总和严格为 1</strong>。</li>
+              </ul>
+              <div class="bg-[#121212] py-2 px-4 rounded-lg mt-4 text-center">
+                <span class="text-[2.2rem] text-primary"
+                  >$$ \text{Softmax}(z_i) = \frac{e^{z_i}}{\sum_{j} e^{z_j}}
+                  $$</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="w-1/2 flex flex-col gap-4">
+            <div
+              class="bg-surface p-6 rounded-xl border border-primary/30 h-full shadow-[0_0_30px_rgba(62,207,142,0.1)]"
+            >
+              <h3 class="text-[2.4rem] font-semibold text-primary mb-3 mt-0">
+                通向深度学习的桥梁
+              </h3>
+              <p class="text-[2rem] leading-[1.5] text-[#D4D4D4] mb-4">
+                逻辑回归不仅是传统的机器学习算法，它与深度学习有着极深的渊源：
+              </p>
+              <blockquote
+                class="border-l-[6px] border-primary pl-4 py-3 not-italic text-white text-[2rem] font-semibold mb-4 bg-[#121212] rounded-r-lg"
+              >
+                逻辑回归本质上就是一个<strong>没有隐藏层的单层神经网络</strong>！
+              </blockquote>
+              <ul
+                class="text-[2rem] leading-[1.5] text-[#D4D4D4] list-disc list-inside space-y-3"
+              >
+                <li><strong>输入层</strong>：特征 $x_1, x_2, ...$</li>
+                <li>
+                  <strong>权重与偏置</strong>：神经网络的连接权重 $w$ 和偏置 $b$
+                </li>
+                <li><strong>激活函数</strong>：Sigmoid / Softmax</li>
+                <li>
+                  <strong>输出层</strong>：逻辑回归 + Softmax
+                  正是现代神经网络最常用的输出层结构。
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 19: 总结 -->
+      <div
+        class="slide-content absolute top-0 left-0 w-full h-full flex flex-col justify-start items-start text-left p-[3rem_8rem]"
+        data-index="18"
+      >
+        <h2
+          class="text-[5rem] font-extrabold text-primary mb-6 text-left w-full leading-[1.2]"
+        >
+          九、总结
+        </h2>
+
+        <table
+          class="w-full text-left border-collapse mb-10 bg-surface rounded-xl overflow-hidden shadow-lg"
+        >
+          <thead>
+            <tr class="bg-gray-800 text-[2.2rem] text-white">
+              <th class="py-4 px-6 border-r border-gray-700">维度</th>
+              <th class="py-4 px-6 border-r border-gray-700">线性回归</th>
+              <th class="py-4 px-6 text-primary">逻辑回归</th>
+            </tr>
+          </thead>
+          <tbody class="text-[2rem] text-gray-300">
+            <tr class="border-b border-gray-700">
+              <td class="py-4 px-6 border-r border-gray-700 font-bold">
+                解决什么问题
+              </td>
+              <td class="py-4 px-6 border-r border-gray-700">
+                回归（预测数值）
+              </td>
+              <td class="py-4 px-6 text-primary">分类（预测类别）</td>
+            </tr>
+            <tr class="border-b border-gray-700">
+              <td class="py-4 px-6 border-r border-gray-700 font-bold">
+                模型输出
+              </td>
+              <td class="py-4 px-6 border-r border-gray-700">任意实数</td>
+              <td class="py-4 px-6 text-primary">0~1 的概率</td>
+            </tr>
+            <tr class="border-b border-gray-700">
+              <td class="py-4 px-6 border-r border-gray-700 font-bold">
+                损失函数
+              </td>
+              <td class="py-4 px-6 border-r border-gray-700">MSE</td>
+              <td class="py-4 px-6 text-primary">交叉熵 (Cross-Entropy)</td>
+            </tr>
+            <tr>
+              <td class="py-4 px-6 border-r border-gray-700 font-bold">
+                评估指标
+              </td>
+              <td class="py-4 px-6 border-r border-gray-700">
+                MSE / RMSE / R²
+              </td>
+              <td class="py-4 px-6 text-primary">Accuracy / F1 / AUC</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ul
+          class="text-[2.2rem] leading-[1.6] text-[#D4D4D4] list-decimal list-inside space-y-4"
+        >
+          <li>
+            逻辑回归本质上是在线性回归的基础上加了一个
+            <strong>Sigmoid</strong>。
+          </li>
+          <li>
+            分类问题不能只看准确率，要根据业务场景选择
+            <strong>Precision / Recall / F1</strong>。
+          </li>
+          <li>
+            逻辑回归虽然简单，但<strong>可解释性强、训练快、不容易过拟合</strong>，工业界依然大量使用。
+          </li>
+          <li>
+            扩展到多分类时，使用
+            <strong>Softmax Regression</strong>（神经网络中最常见的输出层）。
+          </li>
+        </ul>
+      </div>
+    </main>
+
+    <!-- Page Number -->
+    <div
+      id="page-number"
+      class="fixed bottom-4 right-4 text-primary text-xl font-mono z-50 opacity-80"
+    >
+      1 / 1
+    </div>
+
+    <!-- Image Viewer Overlay -->
+    <div id="image-viewer">
+      <img id="image-viewer-img" src="" alt="Fullscreen Image" />
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide-content');
+        const pageNumber = document.getElementById('page-number');
+        let currentIndex = 0;
+
+        // Image Viewer Logic
+        const imageViewer = document.getElementById('image-viewer');
+        const imageViewerImg = document.getElementById('image-viewer-img');
+        const allImages = document.querySelectorAll('main img');
+
+        allImages.forEach((img) => {
+          img.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent slide navigation if any
+            imageViewerImg.src = img.src;
+            imageViewer.style.display = 'flex';
+            // Trigger reflow for transition
+            void imageViewer.offsetWidth;
+            imageViewer.classList.add('active');
+          });
+        });
+
+        imageViewer.addEventListener('click', () => {
+          imageViewer.classList.remove('active');
+          setTimeout(() => {
+            imageViewer.style.display = 'none';
+          }, 300); // Match transition duration
+        });
+
+        function updateSlide(index) {
+          if (index < 0) index = 0;
+          if (index >= slides.length) index = slides.length - 1;
+
+          currentIndex = index;
+
+          // Update visibility
+          slides.forEach((slide, i) => {
+            if (i === currentIndex) {
+              slide.classList.add('active');
+            } else {
+              slide.classList.remove('active');
+            }
+          });
+
+          // Update page number
+          pageNumber.textContent = `${currentIndex + 1} / ${slides.length}`;
+
+          // Update URL hash
+          window.location.hash = `#${currentIndex + 1}`;
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+            updateSlide(currentIndex + 1);
+          } else if (e.key === 'ArrowLeft') {
+            updateSlide(currentIndex - 1);
+          }
+        });
+
+        // Initialize from URL hash
+        const hash = window.location.hash;
+        let initialIndex = 0;
+        if (hash) {
+          const page = parseInt(hash.substring(1), 10);
+          if (!isNaN(page)) {
+            initialIndex = page - 1;
+          }
+        }
+        updateSlide(initialIndex);
+
+        // Handle hash change (e.g. browser back button)
+        window.addEventListener('hashchange', () => {
+          const hash = window.location.hash;
+          if (hash) {
+            const page = parseInt(hash.substring(1), 10);
+            if (!isNaN(page)) {
+              updateSlide(page - 1);
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
